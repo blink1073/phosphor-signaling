@@ -192,7 +192,7 @@ var emitter = require('phosphor-signaling').emitter;
 
 function logger(args) {
   var model = emitter();
-  console.log(model.name, index, name);
+  console.log(model.name, args.index, args.name);
 }
 
 
