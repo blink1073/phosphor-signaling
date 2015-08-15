@@ -21,7 +21,7 @@
     "build:dts": "node scripts/dtsbundle.js",
     "build:test": "tsc --project test",
     "build": "npm run build:src && npm run build:dts && npm run build:test",
-    "docs": "rimraf docs && typedoc --module commonjs --excludeNotExported --mode file --out docs src/index.ts typings/es6-containers/es6-containers.d.ts",
+    "docs": "rimraf docs && typedoc --module commonjs --target ES5 --excludeNotExported --mode file --out docs src/index.ts typings/es6-containers/es6-containers.d.ts",
     "prepublish": "npm run build",
     "test": "mocha"
   },
