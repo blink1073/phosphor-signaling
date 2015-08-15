@@ -8,7 +8,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "dts-bundle": "^0.3.0",
+    "dts-generator": "^1.5.0",
     "expect.js": "^0.3.1",
     "mocha": "^2.2.5",
     "rimraf": "^2.4.2",
@@ -18,7 +18,7 @@
   "scripts": {
     "clean": "rimraf docs && rimraf lib && rimraf test/*.js",
     "build:src": "tsc --project src",
-    "build:dts": "node scripts/dtsbundle.js",
+    "build:dts": "node scripts/dtsgenerate.js",
     "build:test": "tsc --project test",
     "build": "npm run build:src && npm run build:dts && npm run build:test",
     "docs": "rimraf docs && typedoc --module commonjs --target ES5 --excludeNotExported --mode file --out docs src/index.ts typings/es6-containers/es6-containers.d.ts",

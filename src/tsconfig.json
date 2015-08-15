@@ -8,9 +8,5 @@
     "module": "commonjs",
     "target": "ES5",
     "outDir": "../lib"
-  },
-  "files": [
-    "../typings/es6-containers/es6-containers.d.ts",
-    "index.ts"
-  ]
+  }
 }
