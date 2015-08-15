@@ -1,6 +1,6 @@
 {
   "name": "phosphor-signaling",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "A module for type-safe inter-object communication.",
   "main": "lib/index.js",
   "typescript": {
