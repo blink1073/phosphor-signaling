@@ -154,7 +154,7 @@ import { emitter } from 'phosphor-signaling';
 
 function logger(args: { index: number, item: name }): void {
   var model = <Model>emitter();
-  console.log(model.name, index, name);
+  console.log(model.name, args.index, args.name);
 }
 
 
