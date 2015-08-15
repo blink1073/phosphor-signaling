@@ -16,7 +16,7 @@
     "typescript": "^1.5.3"
   },
   "scripts": {
-    "clean": "rimraf lib && rimraf test/*.js",
+    "clean": "rimraf docs && rimraf lib && rimraf test/*.js",
     "build:src": "tsc --project src",
     "build:dts": "node scripts/dtsbundle.js",
     "build:test": "tsc --project test",
