@@ -5,7 +5,6 @@
 |
 | The full license is in the file LICENSE, distributed with this software.
 |----------------------------------------------------------------------------*/
-/// <reference path="../typings/es6-containers/es6-containers.d.ts" />
 'use strict';
 
 

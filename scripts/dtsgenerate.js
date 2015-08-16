@@ -4,5 +4,6 @@ require('dts-generator').generate({
   baseDir: 'lib',
   files: ['index.d.ts'],
   out: 'lib/phosphor-signaling.d.ts',
+  externs: ['../src/_references.d.ts'],
   target: 1 // ts.ScriptTarget.ES5
 });

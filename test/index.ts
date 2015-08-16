@@ -5,8 +5,6 @@
 |
 | The full license is in the file LICENSE, distributed with this software.
 |----------------------------------------------------------------------------*/
-/// <reference path="../typings/expect.js/expect.js.d.ts" />
-/// <reference path="../typings/mocha/mocha.d.ts" />
 'use strict';
 
 import expect = require('expect.js');
