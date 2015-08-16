@@ -1,9 +1,4 @@
-require('dts-generator').generate({
+require('dts-bundle').bundle({
   name: 'phosphor-signaling',
-  main: 'phosphor-signaling/index',
-  baseDir: 'lib',
-  files: ['index.d.ts'],
-  out: 'lib/phosphor-signaling.d.ts',
-  externs: ['../src/_references.d.ts'],
-  target: 1 // ts.ScriptTarget.ES5
+  main: 'lib/index.d.ts',
 });
