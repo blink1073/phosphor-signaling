@@ -1,4 +1,7 @@
-require('dts-bundle').bundle({
+require('dts-generator').generate({
   name: 'phosphor-signaling',
-  main: 'lib/index.d.ts',
+  main: 'phosphor-signaling/index',
+  baseDir: 'lib',
+  files: ['index.d.ts'],
+  out: 'lib/phosphor-signaling.d.ts',
 });
