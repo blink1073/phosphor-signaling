@@ -78,10 +78,10 @@
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-function"><a href="globals.html#clearsignaldata" class="tsd-kind-icon">clear<wbr>Signal<wbr>Data</a></li>
+								<li class="tsd-kind-function"><a href="globals.html#definesignal" class="tsd-kind-icon">define<wbr>Signal</a></li>
 								<li class="tsd-kind-function"><a href="globals.html#disconnectemitter" class="tsd-kind-icon">disconnect<wbr>Emitter</a></li>
 								<li class="tsd-kind-function"><a href="globals.html#disconnectreceiver" class="tsd-kind-icon">disconnect<wbr>Receiver</a></li>
 								<li class="tsd-kind-function"><a href="globals.html#emitter" class="tsd-kind-icon">emitter</a></li>
-								<li class="tsd-kind-function"><a href="globals.html#signal" class="tsd-kind-icon">signal</a></li>
 							</ul>
 						</section>
 					</div>
@@ -118,6 +118,58 @@
 										either the emitter or the receiver.</p>
 										<h4 id="example">Example</h4>
 										<pre><code class="lang-typescript">clearSignalData(someObject);
+</code></pre>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function">
+					<a name="definesignal" class="tsd-anchor"></a>
+					<h3>define<wbr>Signal</h3>
+					<ul class="tsd-signatures tsd-kind-function">
+						<li class="tsd-signature tsd-kind-icon">define<wbr>Signal<span class="tsd-signature-symbol">(</span>proto<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/phosphorjs/phosphor-signaling/blob/HEAD/src/index.ts#L144">index.ts:144</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>A decorator which defines a signal on a prototype.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>proto: <span class="tsd-signature-type">any</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The object prototype on which to define the signal.</p>
+									</div>
+								</li>
+								<li>
+									<h5>name: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The name of the signal to define.</p>
+										<h4 id="notes">Notes</h4>
+										<p>When defining a signal from plain JS (where decorators may not be
+											supported), this function can be invoked directly with the class
+										prototype and signal name.</p>
+										<h4 id="example">Example</h4>
+										<pre><code class="lang-typescript"><span class="hljs-keyword">class</span> SomeClass {
+
+  @defineSignal
+  valueChanged: ISignal&lt;<span class="hljs-built_in">number</span>&gt;;
+
+}
+
+<span class="hljs-comment">// ES5 alternative signal definition</span>
+defineSignal(SomeClass.prototype, <span class="hljs-string">'valueChanged'</span>);
 </code></pre>
 									</div>
 								</li>
@@ -235,58 +287,6 @@ someObject.valueChanged.emit(<span class="hljs-number">42</span>);
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function">
-					<a name="signal" class="tsd-anchor"></a>
-					<h3>signal</h3>
-					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">signal<span class="tsd-signature-symbol">(</span>proto<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/phosphorjs/phosphor-signaling/blob/HEAD/src/index.ts#L144">index.ts:144</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>A decorator which defines a signal for an object.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>proto: <span class="tsd-signature-type">any</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>The object prototype on which to define the signal.</p>
-									</div>
-								</li>
-								<li>
-									<h5>name: <span class="tsd-signature-type">string</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>The name of the signal to define.</p>
-										<h4 id="notes">Notes</h4>
-										<p>When defining a signal from plain JS (where decorators may not be
-											supported), this function can be invoked directly with the class
-										prototype and signal name.</p>
-										<h4 id="example">Example</h4>
-										<pre><code class="lang-typescript"><span class="hljs-keyword">class</span> SomeClass {
-
-  @signal
-  valueChanged: ISignal&lt;<span class="hljs-built_in">number</span>&gt;;
-
-}
-
-<span class="hljs-comment">// ES5 alternative signal definition</span>
-signal(SomeClass.prototype, <span class="hljs-string">'valueChanged'</span>);
-</code></pre>
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-						</li>
-					</ul>
-				</section>
 			</section>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
@@ -306,6 +306,9 @@ signal(SomeClass.prototype, <span class="hljs-string">'valueChanged'</span>);
 						<a href="globals.html#clearsignaldata" class="tsd-kind-icon">clear<wbr>Signal<wbr>Data</a>
 					</li>
 					<li class=" tsd-kind-function">
+						<a href="globals.html#definesignal" class="tsd-kind-icon">define<wbr>Signal</a>
+					</li>
+					<li class=" tsd-kind-function">
 						<a href="globals.html#disconnectemitter" class="tsd-kind-icon">disconnect<wbr>Emitter</a>
 					</li>
 					<li class=" tsd-kind-function">
@@ -313,9 +316,6 @@ signal(SomeClass.prototype, <span class="hljs-string">'valueChanged'</span>);
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#emitter" class="tsd-kind-icon">emitter</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#signal" class="tsd-kind-icon">signal</a>
 					</li>
 				</ul>
 			</nav>

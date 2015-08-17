@@ -74,7 +74,7 @@
 					</div>
 					<h4 id="notes">Notes</h4>
 					<p>User code will not create a signal object directly, instead one will
-						be returned when accessing the property defined by the <code>@signal</code>
+						be returned when accessing the property defined by the <code>defineSignal</code>
 					decorator.</p>
 					<p>When defining a signal from plain JS (where decorators may not be
 						supported), the <code>signal</code> function can be invoked directly with the
@@ -82,13 +82,13 @@
 					<h4 id="example">Example</h4>
 					<pre><code class="lang-typescript"><span class="hljs-keyword">class</span> SomeClass {
 
-  @signal
+  @defineSignal
   valueChanged: ISignal&lt;<span class="hljs-built_in">number</span>&gt;;
 
 }
 
 <span class="hljs-comment">// ES5 alternative signal definition</span>
-signal(SomeClass.prototype, <span class="hljs-string">'valueChanged'</span>);
+defineSignal(SomeClass.prototype, <span class="hljs-string">'valueChanged'</span>);
 </code></pre>
 				</div>
 			</section>
@@ -339,6 +339,9 @@ someObject.valueChanged.disconnect(myCallback);
 						<a href="../globals.html#clearsignaldata" class="tsd-kind-icon">clear<wbr>Signal<wbr>Data</a>
 					</li>
 					<li class=" tsd-kind-function">
+						<a href="../globals.html#definesignal" class="tsd-kind-icon">define<wbr>Signal</a>
+					</li>
+					<li class=" tsd-kind-function">
 						<a href="../globals.html#disconnectemitter" class="tsd-kind-icon">disconnect<wbr>Emitter</a>
 					</li>
 					<li class=" tsd-kind-function">
@@ -346,9 +349,6 @@ someObject.valueChanged.disconnect(myCallback);
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="../globals.html#emitter" class="tsd-kind-icon">emitter</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="../globals.html#signal" class="tsd-kind-icon">signal</a>
 					</li>
 				</ul>
 			</nav>

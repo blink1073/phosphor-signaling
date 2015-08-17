@@ -112,13 +112,14 @@ npm run build
 					compatible with Node/Babel/ES6/ES5. Simply omit the type declarations when
 				using a language other than TypeScript.</p>
 				<p><strong>Start by defining the model object and its signals:</strong></p>
-				<pre><code class="lang-typescript"><span class="hljs-comment">// Omit `ISignal` on Node/Babel/ES6/ES5</span>
-<span class="hljs-keyword">import</span> { ISignal, signal } from <span class="hljs-string">'phosphor-signaling'</span>;
+				<pre><code class="lang-typescript"><span class="hljs-comment">// Omit the `ISignal` import on Node/Babel/ES6/ES5</span>
+<span class="hljs-keyword">import</span> { ISignal, defineSignal } from <span class="hljs-string">'phosphor-signaling'</span>;
 
 
 <span class="hljs-keyword">class</span> Model {
 
-  @signal
+  <span class="hljs-comment">// See below for Node/Babel/ES6/ES5 equivalent</span>
+  @defineSignal
   itemAdded: ISignal&lt;{ index: <span class="hljs-built_in">number</span>, item: <span class="hljs-built_in">string</span> }&gt;;
 
   <span class="hljs-constructor"><span class="hljs-keyword">constructor</span>(name) </span>{
@@ -143,8 +144,8 @@ npm run build
   <span class="hljs-keyword">private</span> _items: <span class="hljs-built_in">string</span>[] = [];
 }
 
-<span class="hljs-comment">// Node/Babel/ES6/ES5 `@signal` decorator alternative</span>
-signal(Model.prototype, <span class="hljs-string">'itemAdded'</span>);
+<span class="hljs-comment">// Node/Babel/ES6/ES5 `@defineSignal` decorator alternative</span>
+defineSignal(Model.prototype, <span class="hljs-string">'itemAdded'</span>);
 </code></pre>
 				<p><strong>Next, define the handler(s) which will consume the signals:</strong></p>
 				<p>If the same handler is connected to multiple signals, it may want to get a
@@ -236,6 +237,9 @@ disconnectEmitter(m1);
 						<a href="globals.html#clearsignaldata" class="tsd-kind-icon">clear<wbr>Signal<wbr>Data</a>
 					</li>
 					<li class=" tsd-kind-function">
+						<a href="globals.html#definesignal" class="tsd-kind-icon">define<wbr>Signal</a>
+					</li>
+					<li class=" tsd-kind-function">
 						<a href="globals.html#disconnectemitter" class="tsd-kind-icon">disconnect<wbr>Emitter</a>
 					</li>
 					<li class=" tsd-kind-function">
@@ -243,9 +247,6 @@ disconnectEmitter(m1);
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#emitter" class="tsd-kind-icon">emitter</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#signal" class="tsd-kind-icon">signal</a>
 					</li>
 				</ul>
 			</nav>
