@@ -10,7 +10,8 @@
 import expect = require('expect.js');
 
 import {
-  ISignal, defineSignal, disconnectEmitter, disconnectReceiver, emitter
+  ISignal, clearSignalData, defineSignal, disconnectEmitter,
+  disconnectReceiver, emitter
 } from '../lib/index';
 
 
@@ -24,6 +25,16 @@ class TestObject {
 
   @defineSignal
   three: ISignal<string[]>;
+}
+
+
+class ExtendedObject extends TestObject {
+
+  notifyCount = 0;
+
+  onNotify(): void {
+    this.notifyCount++;
+  }
 }
 
 
@@ -311,6 +322,30 @@ describe('phosphor-signaling', () => {
       expect(handler2.oneCount).to.be(2);
       expect(handler1.twoValue).to.be(false);
       expect(handler2.twoValue).to.be(true);
+    });
+
+  });
+
+
+  describe('clearSignalData()', () => {
+
+    it('should clear all signal data associated with an object', () => {
+      var counter = 0;
+      var onCount = () => { counter++ };
+      var ext1 = new ExtendedObject();
+      var ext2 = new ExtendedObject();
+      ext1.one.connect(ext1.onNotify, ext1);
+      ext1.one.connect(ext2.onNotify, ext2);
+      ext1.one.connect(onCount);
+      ext2.one.connect(ext1.onNotify, ext1);
+      ext2.one.connect(ext2.onNotify, ext2);
+      ext2.one.connect(onCount);
+      clearSignalData(ext1);
+      ext1.one.emit(void 0);
+      ext2.one.emit(void 0);
+      expect(ext1.notifyCount).to.be(0);
+      expect(ext2.notifyCount).to.be(1);
+      expect(counter).to.be(1);
     });
 
   });

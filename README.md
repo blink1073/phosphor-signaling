@@ -203,3 +203,12 @@ import { disconnectEmitter } from 'phosphor-signaling';
 
 disconnectEmitter(m1);
 ```
+
+**Clear all signal data associated with an object:**
+
+```typescript
+import { clearSignalData } from 'phosphor-signaling';
+
+// disconnect everything - emitter *and* receiver
+clearSignalData(m1);
+```
