@@ -218,6 +218,12 @@ disconnectReceiver(logger);
 
 disconnectEmitter(m1);
 </code></pre>
+				<p><strong>Clear all signal data associated with an object:</strong></p>
+				<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> { clearSignalData } from <span class="hljs-string">'phosphor-signaling'</span>;
+
+<span class="hljs-comment">// disconnect everything - emitter *and* receiver</span>
+clearSignalData(m1);
+</code></pre>
 			</div>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
