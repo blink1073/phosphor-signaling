@@ -10,19 +10,19 @@
 import expect = require('expect.js');
 
 import {
-  ISignal, disconnectEmitter, disconnectReceiver, emitter, signal
+  ISignal, defineSignal, disconnectEmitter, disconnectReceiver, emitter
 } from '../lib/index';
 
 
 class TestObject {
 
-  @signal
+  @defineSignal
   one: ISignal<void>;
 
-  @signal
+  @defineSignal
   two: ISignal<boolean>;
 
-  @signal
+  @defineSignal
   three: ISignal<string[]>;
 }
 

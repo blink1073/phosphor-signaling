@@ -13,7 +13,7 @@
  *
  * #### Notes
  * User code will not create a signal object directly, instead one will
- * be returned when accessing the property defined by the `@signal`
+ * be returned when accessing the property defined by the `defineSignal`
  * decorator.
  *
  * When defining a signal from plain JS (where decorators may not be
@@ -24,13 +24,13 @@
  * ```typescript
  * class SomeClass {
  *
- *   @signal
+ *   @defineSignal
  *   valueChanged: ISignal<number>;
  *
  * }
  *
  * // ES5 alternative signal definition
- * signal(SomeClass.prototype, 'valueChanged');
+ * defineSignal(SomeClass.prototype, 'valueChanged');
  * ```
  */
 export
@@ -116,7 +116,7 @@ interface ISignal<T> {
 
 
 /**
- * A decorator which defines a signal for an object.
+ * A decorator which defines a signal on a prototype.
  *
  * @param proto - The object prototype on which to define the signal.
  *
@@ -131,17 +131,17 @@ interface ISignal<T> {
  * ```typescript
  * class SomeClass {
  *
- *   @signal
+ *   @defineSignal
  *   valueChanged: ISignal<number>;
  *
  * }
  *
  * // ES5 alternative signal definition
- * signal(SomeClass.prototype, 'valueChanged');
+ * defineSignal(SomeClass.prototype, 'valueChanged');
  * ```
  */
 export
-function signal(proto: any, name: string): void {
+function defineSignal(proto: any, name: string): void {
   var token = {};
   Object.defineProperty(proto, name, {
     get: function() { return new Signal(this, token); },

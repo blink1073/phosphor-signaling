@@ -81,13 +81,14 @@ using a language other than TypeScript.
 **Start by defining the model object and its signals:**
 
 ```typescript
-// Omit `ISignal` on Node/Babel/ES6/ES5
-import { ISignal, signal } from 'phosphor-signaling';
+// Omit the `ISignal` import on Node/Babel/ES6/ES5
+import { ISignal, defineSignal } from 'phosphor-signaling';
 
 
 class Model {
 
-  @signal
+  // See below for Node/Babel/ES6/ES5 equivalent
+  @defineSignal
   itemAdded: ISignal<{ index: number, item: string }>;
 
   constructor(name) {
@@ -112,8 +113,8 @@ class Model {
   private _items: string[] = [];
 }
 
-// Node/Babel/ES6/ES5 `@signal` decorator alternative
-signal(Model.prototype, 'itemAdded');
+// Node/Babel/ES6/ES5 `@defineSignal` decorator alternative
+defineSignal(Model.prototype, 'itemAdded');
 ```
 
 **Next, define the handler(s) which will consume the signals:**
