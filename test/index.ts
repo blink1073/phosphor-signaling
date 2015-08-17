@@ -250,6 +250,29 @@ describe('phosphor-signaling', () => {
   });
 
 
+  describe('defineSignal()', () => {
+
+    it('should be usable as a TS decorator', () => {
+      var obj1 = new TestObject();
+      var sig = obj1.one;
+      expect(typeof sig.connect).to.be('function');
+      expect(typeof sig.disconnect).to.be('function');
+      expect(typeof sig.emit).to.be('function');
+    });
+
+    it('should be usable as an ES5 function', () => {
+      function Foo() { };
+      defineSignal(Foo.prototype, 'valueChanged');
+      var foo = new (<any>Foo)();
+      var sig = foo.valueChanged;
+      expect(typeof sig.connect).to.be('function');
+      expect(typeof sig.disconnect).to.be('function');
+      expect(typeof sig.emit).to.be('function');
+    });
+
+  });
+
+
   describe('emitter()', () => {
 
     it('should return the current signal emitter', () => {
