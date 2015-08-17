@@ -108,9 +108,12 @@ npm run build
 					<li>Chrome 38+</li>
 				</ul>
 				<h2 id="usage-examples">Usage Examples</h2>
+				<p><strong>Note:</strong> Except where explicitly noted in the examples, this module is fully
+					compatible with Node/Babel/ES6/ES5. Simply omit the type declarations when
+				using a language other than TypeScript.</p>
 				<p><strong>Start by defining the model object and its signals:</strong></p>
-				<p><em>TypeScript</em></p>
-				<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> { ISignal, signal } from <span class="hljs-string">'phosphor-signaling'</span>;
+				<pre><code class="lang-typescript"><span class="hljs-comment">// Omit `ISignal` on Node/Babel/ES6/ES5</span>
+<span class="hljs-keyword">import</span> { ISignal, signal } from <span class="hljs-string">'phosphor-signaling'</span>;
 
 
 <span class="hljs-keyword">class</span> Model {
@@ -139,41 +142,14 @@ npm run build
   <span class="hljs-keyword">private</span> _name: <span class="hljs-built_in">string</span>;
   <span class="hljs-keyword">private</span> _items: <span class="hljs-built_in">string</span>[] = [];
 }
-</code></pre>
-				<p><em>ES5</em></p>
-				<pre><code class="lang-javascript"><span class="hljs-keyword">var</span> signal = <span class="hljs-built_in">require</span>(<span class="hljs-string">'phosphor-signaling'</span>).signal;
 
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Model</span>(<span class="hljs-params">name</span>) </span>{
-  <span class="hljs-keyword">this</span>._name = name;
-  <span class="hljs-keyword">this</span>._items = [];
-}
-
-
+<span class="hljs-comment">// Node/Babel/ES6/ES5 `@signal` decorator alternative</span>
 signal(Model.prototype, <span class="hljs-string">'itemAdded'</span>);
-
-
-<span class="hljs-built_in">Object</span>.defineProperty(Model.prototype, <span class="hljs-string">'name'</span>, {
-  get: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{ <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>._name; },
-});
-
-
-<span class="hljs-built_in">Object</span>.defineProperty(Model.prototype, <span class="hljs-string">'items'</span>, {
-  get: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{ <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>._items.slice(); },
-});
-
-
-<span class="hljs-built_in">Object</span>.prototype.addItem = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">item</span>) </span>{
-  <span class="hljs-keyword">var</span> i = <span class="hljs-keyword">this</span>._items.length;
-  <span class="hljs-keyword">this</span>._items.push(item);
-  <span class="hljs-keyword">this</span>.itemAdded.emit({ index: i, item: item });
-};
 </code></pre>
 				<p><strong>Next, define the handler(s) which will consume the signals:</strong></p>
-				<p>If the same handler is connected to multiple signals, it may want to get a reference
-					to the object emitting the signal which caused it to be invoked. This
-				can be done with the <code>emitter()</code> function.</p>
-				<p><em>TypeScript</em></p>
+				<p>If the same handler is connected to multiple signals, it may want to get a
+					reference to the object emitting the signal which caused it to be invoked.
+				This can be done with the <code>emitter()</code> function.</p>
 				<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> { emitter } from <span class="hljs-string">'phosphor-signaling'</span>;
 
 
@@ -209,41 +185,8 @@ signal(Model.prototype, <span class="hljs-string">'itemAdded'</span>);
   <span class="hljs-keyword">private</span> _count = <span class="hljs-number">0</span>;
 }
 </code></pre>
-				<p><em>ES5</em></p>
-				<pre><code class="lang-javascript"><span class="hljs-keyword">var</span> emitter = <span class="hljs-built_in">require</span>(<span class="hljs-string">'phosphor-signaling'</span>).emitter;
-
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">logger</span>(<span class="hljs-params">args</span>) </span>{
-  <span class="hljs-keyword">var</span> model = emitter();
-  <span class="hljs-built_in">console</span>.log(model.name, args.index, args.name);
-}
-
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">ItemCounter</span>(<span class="hljs-params">model, item</span>) </span>{
-  <span class="hljs-keyword">this</span>._count = <span class="hljs-number">0</span>;
-  <span class="hljs-keyword">this</span>._model = model;
-  <span class="hljs-keyword">this</span>._item = item;
-  model.itemAdded.connect(<span class="hljs-keyword">this</span>._onItemAdded, <span class="hljs-keyword">this</span>);
-}
-
-
-ItemCounter.prototype.dispose = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
-  <span class="hljs-keyword">this</span>._model.itemAdded.disconnect(<span class="hljs-keyword">this</span>._onItemAdded, <span class="hljs-keyword">this</span>);
-  <span class="hljs-keyword">this</span>._model = <span class="hljs-literal">null</span>;
-};
-
-
-<span class="hljs-built_in">Object</span>.defineProperty(ItemCounter.prototype, <span class="hljs-string">'count'</span>, {
-  get: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{ <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>._count; },
-});
-
-
-ItemCounter.prototype._onItemAdded = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">args</span>) </span>{
-  <span class="hljs-keyword">if</span> (args.item === <span class="hljs-keyword">this</span>._item) <span class="hljs-keyword">this</span>._count++;
-};
-</code></pre>
 				<p><strong>Next, connect the handlers to the signals:</strong></p>
-				<pre><code class="lang-javascript"><span class="hljs-keyword">var</span> m1 = <span class="hljs-keyword">new</span> Model(<span class="hljs-string">'foo'</span>);
+				<pre><code class="lang-typescript"><span class="hljs-keyword">var</span> m1 = <span class="hljs-keyword">new</span> Model(<span class="hljs-string">'foo'</span>);
 <span class="hljs-keyword">var</span> m2 = <span class="hljs-keyword">new</span> Model(<span class="hljs-string">'bar'</span>);
 <span class="hljs-keyword">var</span> m3 = <span class="hljs-keyword">new</span> Model(<span class="hljs-string">'baz'</span>);
 
@@ -256,7 +199,7 @@ m2.itemAdded.connect(logger);
 m3.itemAdded.connect(logger);
 </code></pre>
 				<p><strong>Make some changes to the models:</strong></p>
-				<pre><code class="lang-javascript">m1.addItem(<span class="hljs-string">'turkey'</span>);
+				<pre><code class="lang-typescript">m1.addItem(<span class="hljs-string">'turkey'</span>);
 m1.addItem(<span class="hljs-string">'fowl'</span>);
 m1.addItem(<span class="hljs-string">'quail'</span>);
 
@@ -265,21 +208,12 @@ m2.addItem(<span class="hljs-string">'buzzard'</span>);
 m3.addItem(<span class="hljs-string">'hen'</span>);
 </code></pre>
 				<p><strong>Disconnect the logger from all models in a single-shot:</strong></p>
-				<p><em>TypeScript</em></p>
-				<pre><code><span class="hljs-keyword">import</span> { disconnectReceiver } <span class="hljs-keyword">from</span> <span class="hljs-string">'phosphor-signaling'</span>;
+				<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> { disconnectReceiver } from <span class="hljs-string">'phosphor-signaling'</span>;
 
 disconnectReceiver(logger);
-</code></pre><p><em>ES5</em></p>
-				<pre><code><span class="hljs-keyword">var</span> disconnectReceiver = <span class="hljs-built_in">require</span>(<span class="hljs-string">'phosphor-signaling'</span>).disconnectReceiver;
-
-disconnectReceiver(logger);
-</code></pre><p><strong>Disconnect a particular model from all handlers in a single-shot:</strong></p>
-				<p><em>TypeScript</em></p>
-				<pre><code><span class="hljs-keyword">import</span> { disconnectEmitter } <span class="hljs-keyword">from</span> <span class="hljs-string">'phosphor-signaling'</span>;
-
-disconnectEmitter(m1);
-</code></pre><p><em>ES5</em></p>
-				<pre><code><span class="hljs-keyword">var</span> disconnectEmitter = <span class="hljs-built_in">require</span>(<span class="hljs-string">'phosphor-signaling'</span>).disconnectEmitter;
+</code></pre>
+				<p><strong>Disconnect a particular model from all handlers in a single-shot:</strong></p>
+				<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> { disconnectEmitter } from <span class="hljs-string">'phosphor-signaling'</span>;
 
 disconnectEmitter(m1);
 </code></pre>
