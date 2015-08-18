@@ -13,12 +13,12 @@
  *
  * #### Notes
  * User code will not create a signal object directly, instead one will
- * be returned when accessing the property defined by the `defineSignal`
+ * be returned when accessing the property defined by the [[defineSignal]]
  * decorator.
  *
  * When defining a signal from plain JS (where decorators may not be
- * supported), the `signal` function can be invoked directly with the
- * class prototype and signal name.
+ * supported), the [[defineSignal]] function can be invoked directly
+ * with the class prototype and signal name.
  *
  * #### Example
  * ```typescript
