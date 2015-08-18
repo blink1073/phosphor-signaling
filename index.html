@@ -112,8 +112,7 @@ npm run build
 					compatible with Node/Babel/ES6/ES5. Simply omit the type declarations when
 				using a language other than TypeScript.</p>
 				<p><strong>Start by defining the model object and its signals:</strong></p>
-				<pre><code class="lang-typescript"><span class="hljs-comment">// Omit the `ISignal` import on Node/Babel/ES6/ES5</span>
-<span class="hljs-keyword">import</span> { ISignal, defineSignal } from <span class="hljs-string">'phosphor-signaling'</span>;
+				<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> { ISignal, defineSignal } from <span class="hljs-string">'phosphor-signaling'</span>;
 
 
 <span class="hljs-keyword">class</span> Model {
@@ -211,15 +210,18 @@ m3.addItem(<span class="hljs-string">'hen'</span>);
 				<p><strong>Disconnect the logger from all models in a single-shot:</strong></p>
 				<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> { disconnectReceiver } from <span class="hljs-string">'phosphor-signaling'</span>;
 
+
 disconnectReceiver(logger);
 </code></pre>
 				<p><strong>Disconnect a particular model from all handlers in a single-shot:</strong></p>
 				<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> { disconnectEmitter } from <span class="hljs-string">'phosphor-signaling'</span>;
 
+
 disconnectEmitter(m1);
 </code></pre>
 				<p><strong>Clear all signal data associated with an object:</strong></p>
 				<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> { clearSignalData } from <span class="hljs-string">'phosphor-signaling'</span>;
+
 
 <span class="hljs-comment">// disconnect everything - emitter *and* receiver</span>
 clearSignalData(m1);
