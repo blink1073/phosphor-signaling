@@ -112,7 +112,6 @@ describe('phosphor-signaling', () => {
 
     });
 
-
     describe('#disconnect()', () => {
 
       it('should return true on success', () => {
@@ -148,7 +147,6 @@ describe('phosphor-signaling', () => {
       });
 
     });
-
 
     describe('#emit()', () => {
 
@@ -249,7 +247,6 @@ describe('phosphor-signaling', () => {
 
   });
 
-
   describe('defineSignal()', () => {
 
     it('should be usable as a TS decorator', () => {
@@ -271,7 +268,6 @@ describe('phosphor-signaling', () => {
     });
 
   });
-
 
   describe('emitter()', () => {
 
@@ -302,7 +298,6 @@ describe('phosphor-signaling', () => {
 
   });
 
-
   describe('disconnectEmitter()', () => {
 
     it('should disconnect all signals from a specific emitter', () => {
@@ -322,7 +317,6 @@ describe('phosphor-signaling', () => {
     });
 
   });
-
 
   describe('disconnectReceiver()', () => {
 
@@ -348,7 +342,6 @@ describe('phosphor-signaling', () => {
     });
 
   });
-
 
   describe('clearSignalData()', () => {
 
