@@ -81,7 +81,6 @@ using a language other than TypeScript.
 **Start by defining the model object and its signals:**
 
 ```typescript
-// Omit the `ISignal` import on Node/Babel/ES6/ES5
 import { ISignal, defineSignal } from 'phosphor-signaling';
 
 
@@ -193,6 +192,7 @@ m3.addItem('hen');
 ```typescript
 import { disconnectReceiver } from 'phosphor-signaling';
 
+
 disconnectReceiver(logger);
 ```
 
@@ -201,6 +201,7 @@ disconnectReceiver(logger);
 ```typescript
 import { disconnectEmitter } from 'phosphor-signaling';
 
+
 disconnectEmitter(m1);
 ```
 
@@ -208,6 +209,7 @@ disconnectEmitter(m1);
 
 ```typescript
 import { clearSignalData } from 'phosphor-signaling';
+
 
 // disconnect everything - emitter *and* receiver
 clearSignalData(m1);
