@@ -3,7 +3,7 @@ phosphor-signaling
 
 A module for type-safe inter-object communication.
 
-[API Docs](http://phosphorjs.github.io/phosphor-signaling/)
+[API Docs](http://phosphorjs.github.io/phosphor-signaling/api/)
 
 
 Package Install
