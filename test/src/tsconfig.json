@@ -4,11 +4,12 @@
     "noImplicitAny": true,
     "noEmitOnError": true,
     "module": "commonjs",
-    "target": "ES5"
+    "target": "ES5",
+    "outDir": "../build"
   },
   "files": [
-    "../typings/expect.js/expect.js.d.ts",
-    "../typings/mocha/mocha.d.ts",
-    "testsignaling.ts"
+    "../../typings/expect.js/expect.js.d.ts",
+    "../../typings/mocha/mocha.d.ts",
+    "index.ts"
   ]
 }

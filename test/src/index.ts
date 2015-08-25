@@ -12,7 +12,7 @@ import expect = require('expect.js');
 import {
   ISignal, clearSignalData, defineSignal, disconnectEmitter,
   disconnectReceiver, emitter
-} from '../lib/index';
+} from '../../lib/index';
 
 
 class TestObject {
