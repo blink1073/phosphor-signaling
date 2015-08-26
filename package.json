@@ -29,6 +29,10 @@
     "type": "git",
     "url": "https://github.com/phosphorjs/phosphor-signaling.git"
   },
+  "files": [
+    "lib/index.js",
+    "lib/phosphor-signaling.d.ts"
+  ],
   "keywords": [
     "signal",
     "signals",
