@@ -1,6 +1,9 @@
 phosphor-signaling
 ==================
 
+[![Build Status](https://travis-ci.org/phosphorjs/phosphor-signaling.svg)](https://travis-ci.org/phosphorjs/phosphor-signaling?branch=master)
+[![Coverage Status](https://coveralls.io/repos/phosphorjs/phosphor-signaling/badge.svg?branch=master&service=github)](https://coveralls.io/github/phosphorjs/phosphor-signaling?branch=master)
+
 A module for type-safe inter-object communication.
 
 [API Docs](http://phosphorjs.github.io/phosphor-signaling/api/)
