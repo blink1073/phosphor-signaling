@@ -129,21 +129,38 @@ describe('phosphor-signaling', () => {
         expect(d1).to.be(false);
       });
 
+      it('should disconnect plain functions', () => {
+        var obj = new TestObject();
+        var handler = new TestHandler();
+        obj.one.connect(handler.onThrow);
+        expect(obj.one.disconnect(handler.onThrow)).to.be(true);
+        expect(() => obj.one.emit(void 0)).to.not.throwError();
+      });
+
       it('should disconnect a specific signal', () => {
         var obj1 = new TestObject();
         var obj2 = new TestObject();
+        var obj3 = new TestObject();
         var handler1 = new TestHandler();
         var handler2 = new TestHandler();
+        var handler3 = new TestHandler();
         obj1.one.connect(handler1.onOne, handler1);
         obj2.one.connect(handler2.onOne, handler2);
+        obj1.one.connect(handler3.onOne, handler3);
+        obj2.one.connect(handler3.onOne, handler3);
+        obj3.one.connect(handler3.onOne, handler3);
         var d1 = obj1.one.disconnect(handler1.onOne, handler1);
         var d2 = obj1.one.disconnect(handler1.onOne, handler1);
+        var d3 = obj2.one.disconnect(handler3.onOne, handler3);
         obj1.one.emit(void 0);
         obj2.one.emit(void 0);
+        obj3.one.emit(void 0);
         expect(d1).to.be(true);
         expect(d2).to.be(false);
+        expect(d3).to.be(true);
         expect(handler1.oneCount).to.be(0);
         expect(handler2.oneCount).to.be(1);
+        expect(handler3.oneCount).to.be(2);
       });
 
     });
@@ -316,6 +333,10 @@ describe('phosphor-signaling', () => {
       expect(handler2.oneCount).to.be(1);
     });
 
+    it('should be a no-op if the emitter is not connected', () => {
+      expect(() => disconnectEmitter({})).to.not.throwError();
+    });
+
   });
 
   describe('disconnectReceiver()', () => {
@@ -339,6 +360,10 @@ describe('phosphor-signaling', () => {
       expect(handler2.oneCount).to.be(2);
       expect(handler1.twoValue).to.be(false);
       expect(handler2.twoValue).to.be(true);
+    });
+
+    it('should be a no-op if the receiver is not connected', () => {
+      expect(() => disconnectReceiver({})).to.not.throwError();
     });
 
   });
