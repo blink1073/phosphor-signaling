@@ -11,36 +11,106 @@
 /**
  * An object used for type-safe inter-object communication.
  *
- * #### Notes
- * User code will not create a signal object directly, instead one will
- * be returned when accessing the property defined by the [[defineSignal]]
- * decorator.
+ * Signals provide a type-safe implementation of the publish-subscribe
+ * pattern. An object (publisher) declares which signals it will emit,
+ * and consumers connect callbacks (subscribers) to those signals. The
+ * subscribers are invoked whenever the publisher emits the signal.
  *
- * When defining a signal from plain JS (where decorators may not be
- * supported), the [[defineSignal]] function can be invoked directly
- * with the class prototype and signal name.
+ * A `Signal` object must be bound to a sender in order to be useful.
+ * A common pattern is to declare a `Signal` object as a static class
+ * member, along with a convenience getter which binds the signal to
+ * the `this` instance on-demand.
  *
  * #### Example
  * ```typescript
- * class SomeClass {
+ * import { ISignal, Signal } from 'phosphor-signaling';
  *
- *   @defineSignal
- *   valueChanged: ISignal<number>;
+ * class MyClass {
  *
+ *   static valueChangedSignal = new Signal<MyClass, number>();
+ *
+ *   constructor(name: string) {
+ *     this._name = name;
+ *   }
+ *
+ *   get valueChanged(): ISignal<MyClass, number> {
+ *     return MyClass.valueChangedSignal.bind(this);
+ *   }
+ *
+ *   get name(): string {
+ *     return this._name;
+ *   }
+ *
+ *   get value(): number {
+ *     return this._value;
+ *   }
+ *
+ *   set value(value: number) {
+ *     if (value !== this._value) {
+ *       this._value = value;
+ *       this.valueChanged.emit(value);
+ *     }
+ *   }
+ *
+ *   private _name: string;
+ *   private _value = 0;
  * }
  *
- * // ES5 alternative signal definition
- * defineSignal(SomeClass.prototype, 'valueChanged');
+ * function logger(sender: MyClass, value: number): void {
+ *   console.log(sender.name, value);
+ * }
+ *
+ * var m1 = new MyClass('foo');
+ * var m2 = new MyClass('bar');
+ *
+ * m1.valueChanged.connect(logger);
+ * m2.valueChanged.connect(logger);
+ *
+ * m1.value = 42;  // logs: foo 42
+ * m2.value = 17;  // logs: bar 17
  * ```
  */
 export
-interface ISignal<T> {
+class Signal<T, U> {
+  /**
+   * Bind the signal to a specific sender.
+   *
+   * @param sender - The sender object to bind to the signal.
+   *
+   * @returns The bound signal object which can be used for connecting,
+   *   disconnecting, and emitting the signal.
+   */
+  bind(sender: T): ISignal<T, U> {
+    return new BoundSignal(this, sender);
+  }
+}
+
+
+/**
+ * A typedef for a signal callback function.
+ *
+ * @param T - The type of the sender.
+ *
+ * @param U - The type of the signal args.
+ */
+export
+type Slot<T, U> = (sender: T, args: U) => void;
+
+
+/**
+ * A signal object which is bound to a specific sender.
+ *
+ * User code will not create instances of `ISignal` directly. They are
+ * created on demand by calling the [[bind]] method of a [[Signal]] and
+ * passing in the sender object to which the signal should bind.
+ */
+export
+interface ISignal<T, U> {
   /**
    * Connect a callback to the signal.
    *
-   * @param callback - The function to invoke when the signal is
-   *   emitted. The args object emitted with the signal is passed
-   *   as the first and only argument to the function.
+   * @param callback - The function to invoke whenever the signal is
+   *   emitted. It will be passed the sender object and the emit args.
    *
    * @param thisArg - The object to use as the `this` context in the
    *   callback. If provided, this must be a non-primitive object.
@@ -67,12 +137,12 @@ interface ISignal<T> {
    * someObject.valueChanged.connect(myCallback);
    * ```
    */
-  connect(callback: (args: T) => void, thisArg?: any): boolean;
+  connect(callback: Slot<T, U>, thisArg?: any): boolean;
 
   /**
    * Disconnect a callback from the signal.
    *
-   * @param callback - The callback connected to the signal.
+   * @param callback - The function connected to the signal.
    *
    * @param thisArg - The `this` context for the callback.
    *
@@ -94,7 +164,7 @@ interface ISignal<T> {
    * someObject.valueChanged.disconnect(myCallback);
    * ```
    */
-  disconnect(callback: (args: T) => void, thisArg?: any): boolean;
+  disconnect(callback: Slot<T, U>, thisArg?: any): boolean;
 
   /**
    * Emit the signal and invoke the connected callbacks.
@@ -103,106 +173,49 @@ interface ISignal<T> {
    *
    * #### Notes
    * If a connected callback throws an exception, dispatching of the
-   * signal will terminate immediately and the exception will be
-   * propagated to the call site of this function.
+   * signal will stop immediately and the exception will be propagated
+   * to the call site of this function.
    *
    * #### Example
    * ```typescript
-   * someObject.valueChanged.emit(42);
+   * this.valueChanged.emit(42);
    * ```
    */
-  emit(args: T): void;
+  emit(args: U): void;
 }
 
 
 /**
- * A decorator which defines a signal on a prototype.
+ * Remove all connections where the given object is the sender.
  *
- * @param proto - The object prototype on which to define the signal.
- *
- * @param name - The name of the signal to define.
- *
- * #### Notes
- * When defining a signal from plain JS (where decorators may not be
- * supported), this function can be invoked directly with the class
- * prototype and signal name.
+ * @param sender - The sender object of interest.
  *
  * #### Example
  * ```typescript
- * class SomeClass {
- *
- *   @defineSignal
- *   valueChanged: ISignal<number>;
- *
- * }
- *
- * // ES5 alternative signal definition
- * defineSignal(SomeClass.prototype, 'valueChanged');
+ * disconnectSender(someObject);
  * ```
  */
 export
-function defineSignal(proto: any, name: string): void {
-  var token = {};
-  Object.defineProperty(proto, name, {
-    get: function() { return new Signal(this, token); },
-  });
-}
-
-
-/**
- * Get the object which is emitting the current signal.
- *
- * @returns The object emitting the current signal, or `null` if a
- *   signal is not currently being emitted.
- *
- * #### Example
- * ```typescript
- * someObject.valueChanged.connect(myCallback);
- *
- * someObject.valueChanged.emit(42);
- *
- * function myCallback(value: number): void {
- *   console.log(emitter() === someObject); // true
- * }
- * ```
- */
-export
-function emitter(): any {
-  return currentEmitter;
-}
-
-
-/**
- * Remove all connections where the given object is the emitter.
- *
- * @param obj - The emitter object of interest.
- *
- * #### Example
- * ```typescript
- * disconnectEmitter(someObject);
- * ```
- */
-export
-function disconnectEmitter(obj: any): void {
-  var list = emitterMap.get(obj);
+function disconnectSender(sender: any): void {
+  var list = senderMap.get(sender);
   if (!list) {
     return;
   }
   var conn = list.first;
   while (conn !== null) {
-    removeFromEmittersList(conn);
+    removeFromSendersList(conn);
     conn.callback = null;
     conn.thisArg = null;
     conn = conn.nextReceiver;
   }
-  emitterMap.delete(obj);
+  senderMap.delete(sender);
 }
 
 
 /**
  * Remove all connections where the given object is the receiver.
  *
- * @param obj - The receiver object of interest.
+ * @param receiver - The receiver object of interest.
  *
  * #### Notes
  * If a `thisArg` is provided when connecting a signal, that object
@@ -219,20 +232,20 @@ function disconnectEmitter(obj: any): void {
  * ```
  */
 export
-function disconnectReceiver(obj: any): void {
-  var conn = receiverMap.get(obj);
+function disconnectReceiver(receiver: any): void {
+  var conn = receiverMap.get(receiver);
   if (!conn) {
     return;
   }
   while (conn !== null) {
-    var next = conn.nextEmitter;
+    var next = conn.nextSender;
     conn.callback = null;
     conn.thisArg = null;
-    conn.prevEmitter = null;
-    conn.nextEmitter = null;
+    conn.prevSender = null;
+    conn.nextSender = null;
     conn = next;
   }
-  receiverMap.delete(obj);
+  receiverMap.delete(receiver);
 }
 
 
@@ -243,7 +256,7 @@ function disconnectReceiver(obj: any): void {
  *
  * #### Notes
  * This removes all signal connections where the object is used as
- * either the emitter or the receiver.
+ * either the sender or the receiver.
  *
  * #### Example
  * ```typescript
@@ -252,7 +265,7 @@ function disconnectReceiver(obj: any): void {
  */
 export
 function clearSignalData(obj: any): void {
-  disconnectEmitter(obj);
+  disconnectSender(obj);
   disconnectReceiver(obj);
 }
 
@@ -260,38 +273,38 @@ function clearSignalData(obj: any): void {
 /**
  * A concrete implementation of ISignal.
  */
-class Signal implements ISignal<any> {
+class BoundSignal<T, U> implements ISignal<T, U> {
   /**
-   * Construct a new signal.
+   * Construct a new bound signal.
    */
-  constructor(owner: any, token: any) {
-    this._owner = owner;
-    this._token = token;
+  constructor(signal: Signal<T, U>, sender: T) {
+    this._signal = signal;
+    this._sender = sender;
   }
 
   /**
    * Connect a callback to the signal.
    */
-  connect(callback: (args: any) => void, thisArg?: any): boolean {
-    return connect(this._owner, this._token, callback, thisArg);
+  connect(callback: Slot<T, U>, thisArg?: any): boolean {
+    return connect(this._sender, this._signal, callback, thisArg);
   }
 
   /**
    * Disconnect a callback from the signal.
    */
-  disconnect(callback: (args: any) => void, thisArg?: any): boolean {
-    return disconnect(this._owner, this._token, callback, thisArg);
+  disconnect(callback: Slot<T, U>, thisArg?: any): boolean {
+    return disconnect(this._sender, this._signal, callback, thisArg);
   }
 
   /**
    * Emit the signal and invoke the connected callbacks.
    */
-  emit(args: any): void {
-    emit(this._owner, this._token, args);
+  emit(args: U): void {
+    emit(this._sender, this._signal, args);
   }
 
-  private _owner: any;
-  private _token: any;
+  private _signal: Signal<T, U>;
+  private _sender: T;
 }
 
 
@@ -300,14 +313,14 @@ class Signal implements ISignal<any> {
  */
 class Connection {
   /**
-   * The token which identifies the signal.
+   * The signal for the connection.
    */
-  token: any = null;
+  signal: Signal<any, any> = null;
 
   /**
    * The callback connected to the signal.
    */
-  callback: Function = null;
+  callback: Slot<any, any> = null;
 
   /**
    * The `this` context for the callback.
@@ -320,19 +333,19 @@ class Connection {
   nextReceiver: Connection = null;
 
   /**
-   * The next connection in the doubly linked emitters list.
+   * The next connection in the doubly linked senders list.
    */
-  nextEmitter: Connection = null;
+  nextSender: Connection = null;
 
   /**
-   * The previous connection in the doubly linked emitters list.
+   * The previous connection in the doubly linked senders list.
    */
-  prevEmitter: Connection = null;
+  prevSender: Connection = null;
 }
 
 
 /**
- * The list of receiver connections for a specific emitter.
+ * The list of receiver connections for a specific sender.
  */
 class ConnectionList {
   /**
@@ -353,59 +366,56 @@ class ConnectionList {
 
 
 /**
- * A mapping of emitter object to its receiver connection list.
+ * A mapping of sender object to its receiver connection list.
  */
-var emitterMap = new WeakMap<any, ConnectionList>();
+var senderMap = new WeakMap<any, ConnectionList>();
 
 
 /**
- * A mapping of receiver object to its emitter connection list.
+ * A mapping of receiver object to its sender connection list.
  */
 var receiverMap = new WeakMap<any, Connection>();
 
 
 /**
- * The object emitting the current signal.
+ * Create a connection between a sender, signal, and callback.
  */
-var currentEmitter: any = null;
-
-
-/**
- * Connect a signal to a callback.
- */
-function connect(owner: any, token: any, callback: Function, thisArg: any): boolean {
+function connect<T, U>(sender: T, signal: Signal<T, U>, callback: Slot<T, U>, thisArg: any): boolean {
   // Coerce a `null` thisArg to `undefined`.
   thisArg = thisArg || void 0;
 
-  // Search for an equivalent connection and bail if one is found.
-  var list = emitterMap.get(owner);
-  if (list && findConnection(list, token, callback, thisArg)) {
+  // Search for an equivalent connection and bail if one exists.
+  var list = senderMap.get(sender);
+  if (list && findConnection(list, signal, callback, thisArg)) {
     return false;
   }
 
   // Create a new connection.
   var conn = new Connection();
-  conn.token = token;
+  conn.signal = signal;
   conn.callback = callback;
   conn.thisArg = thisArg;
 
   // Add the connection to the receivers list.
-  if (!list || list.last === null) {
+  if (!list) {
     list = new ConnectionList();
     list.first = conn;
     list.last = conn;
-    emitterMap.set(owner, list);
+    senderMap.set(sender, list);
+  } else if (list.last === null) {
+    list.first = conn;
+    list.last = conn;
   } else {
     list.last.nextReceiver = conn;
     list.last = conn;
   }
 
-  // Add the connection to the emitters list.
+  // Add the connection to the senders list.
   var receiver = thisArg || callback;
   var head = receiverMap.get(receiver);
   if (head) {
-    head.prevEmitter = conn;
-    conn.nextEmitter = head;
+    head.prevSender = conn;
+    conn.nextSender = head;
   }
   receiverMap.set(receiver, conn);
 
@@ -414,25 +424,25 @@ function connect(owner: any, token: any, callback: Function, thisArg: any): bool
 
 
 /**
- * Disconnect a signal from a callback.
+ * Break the connection between a sender, signal, and callback.
  */
-function disconnect(owner: any, token: any, callback: Function, thisArg: any): boolean {
+function disconnect<T, U>(sender: T, signal: Signal<T, U>, callback: Slot<T, U>, thisArg: any): boolean {
   // Coerce a `null` thisArg to `undefined`.
   thisArg = thisArg || void 0;
 
-  // Bail early if there is no equivalent connection.
-  var list = emitterMap.get(owner);
+  // Search for an equivalent connection and bail if none exists.
+  var list = senderMap.get(sender);
   if (!list) {
     return false;
   }
-  var conn = findConnection(list, token, callback, thisArg);
+  var conn = findConnection(list, signal, callback, thisArg);
   if (!conn) {
     return false;
   }
 
-  // Remove the connection from the emitters list. It will be removed
+  // Remove the connection from the senders list. It will be removed
   // from the receivers list the next time the signal is emitted.
-  removeFromEmittersList(conn);
+  removeFromSendersList(conn);
 
   // Clear the connection data so it becomes a dead connection.
   conn.callback = null;
@@ -445,18 +455,15 @@ function disconnect(owner: any, token: any, callback: Function, thisArg: any): b
 /**
  * Emit a signal and invoke the connected callbacks.
  */
-function emit(owner: any, token: any, args: any): void {
-  var list = emitterMap.get(owner);
+function emit<T, U>(sender: T, signal: Signal<T, U>, args: U): void {
+  var list = senderMap.get(sender);
   if (!list) {
     return;
   }
-  var prev = currentEmitter;
-  currentEmitter = owner;
   list.refs++;
   try {
-    var dirty = invokeList(list, token, args);
+    var dirty = invokeList(list, sender, signal, args);
   } finally {
-    currentEmitter = prev;
     list.refs--;
   }
   if (dirty && list.refs === 0) {
@@ -466,12 +473,14 @@ function emit(owner: any, token: any, args: any): void {
 
 
 /**
- * Find a matching connection in the given connection list, or null.
+ * Find a matching connection in the given connection list.
+ *
+ * Returns `null` if no matching connection is found.
  */
-function findConnection(list: ConnectionList, token: any, callback: Function, thisArg: any): Connection {
+function findConnection<T, U>(list: ConnectionList, signal: Signal<T, U>, callback: Slot<T, U>, thisArg: any): Connection {
   var conn = list.first;
   while (conn !== null) {
-    if (conn.token === token &&
+    if (conn.signal === signal &&
         conn.callback === callback &&
         conn.thisArg === thisArg) {
       return conn;
@@ -483,20 +492,20 @@ function findConnection(list: ConnectionList, token: any, callback: Function, th
 
 
 /**
- * Invoke the matching callbacks in the given connection list.
+ * Invoke the callbacks for the matching signals in the list.
  *
  * Connections added during dispatch will not be invoked. This returns
  * `true` if there are dead connections in the list, `false` otherwise.
  */
-function invokeList(list: ConnectionList, token: any, args: any): boolean {
+function invokeList<T, U>(list: ConnectionList, sender: T, signal: Signal<T, U>, args: U): boolean {
   var dirty = false;
   var last = list.last;
   var conn = list.first;
   while (conn !== null) {
-    if (conn.callback && conn.token === token) {
-      conn.callback.call(conn.thisArg, args);
-    } else if (!conn.callback) {
+    if (!conn.callback) {
       dirty = true;
+    } else if (conn.signal === signal) {
+      conn.callback.call(conn.thisArg, sender, args);
     }
     if (conn === last) {
       break;
@@ -539,21 +548,21 @@ function cleanList(list: ConnectionList): void {
 /**
  * Remove a connection from the doubly linked list of senders.
  */
-function removeFromEmittersList(conn: Connection): void {
+function removeFromSendersList(conn: Connection): void {
   var receiver = conn.thisArg || conn.callback;
-  var prev = conn.prevEmitter;
-  var next = conn.nextEmitter;
+  var prev = conn.prevSender;
+  var next = conn.nextSender;
   if (prev === null && next === null) {
     receiverMap.delete(receiver);
   } else if (prev === null) {
     receiverMap.set(receiver, next);
-    next.prevEmitter = null;
+    next.prevSender = null;
   } else if (next === null) {
-    prev.nextEmitter = null;
+    prev.nextSender = null;
   } else {
-    prev.nextEmitter = next;
-    next.prevEmitter = prev;
+    prev.nextSender = next;
+    next.prevSender = prev;
   }
-  conn.prevEmitter = null;
-  conn.nextEmitter = null;
+  conn.prevSender = null;
+  conn.nextSender = null;
 }
