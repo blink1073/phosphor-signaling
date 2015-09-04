@@ -390,7 +390,7 @@ function connect(owner: any, token: any, callback: Function, thisArg: any): bool
   conn.thisArg = thisArg;
 
   // Add the connection to the receivers list.
-  if (!list) {
+  if (!list || list.last === null) {
     list = new ConnectionList();
     list.first = conn;
     list.last = conn;

@@ -262,6 +262,21 @@ describe('phosphor-signaling', () => {
 
     });
 
+    context('https://github.com/phosphorjs/phosphor-signaling/issues/5', () => {
+
+      it('should handle connect after disconnect and emit', () => {
+        var obj = new TestObject();
+        var handler = new TestHandler();
+        var c1 = obj.one.connect(handler.onOne, handler);
+        expect(c1).to.be(true);
+        obj.one.disconnect(handler.onOne, handler);
+        obj.one.emit(void 0);
+        var c2 = obj.one.connect(handler.onOne, handler);
+        expect(c2).to.be(true);
+      });
+
+    });
+
   });
 
   describe('defineSignal()', () => {
