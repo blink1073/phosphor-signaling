@@ -108,9 +108,9 @@ When defining a signal for use by instances of the **same** class:
 
   - Append the suffix `'Signal'` to the static member name.
 
-  - Define a public getter which binds the static signal the
-    instance. This getter should contain no logic outside of
-    binding the signal.
+  - Define a public getter which binds the static signal to
+    the instance. This getter should contain no logic outside
+    of binding the signal.
 
   - The name of the getter should be the same as the name of
     the static signal minus the `'Signal'` suffix.
@@ -258,10 +258,8 @@ import {
 // Disconnect a handler from all models in a single-shot.
 disconnectReceiver(handler);
 
-
 // Disconnect a particular model from all handlers in a single-shot.
 disconnectSender(model);
-
 
 // disconnect everything - sender *and* receiver
 clearSignalData(model);
