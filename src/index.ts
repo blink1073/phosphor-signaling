@@ -101,8 +101,7 @@ type Slot<T, U> = (sender: T, args: U) => void;
  * A signal object which is bound to a specific sender.
  *
  * User code will not create instances of `ISignal` directly. They are
- * created on demand by calling the [[bind]] method of a [[Signal]] and
- * passing in the sender object to which the signal should bind.
+ * created on demand by calling the [[bind]] method of a [[Signal]].
  */
 export
 interface ISignal<T, U> {

@@ -88,24 +88,35 @@ browserify myapp.js -t browserify-css -o mybundle.js
 Usage Examples
 --------------
 
-**Note:** Except where explicitly noted in the examples, this module is fully
-compatible with Node/Babel/ES6/ES5. Simply omit the type declarations when
-using a language other than TypeScript.
-
-**Start by defining the model object and its signals:**
+**Note:** This module is fully compatible with Node/Babel/ES6/ES5. Simply
+omit the type declarations when using a language other than TypeScript.
 
 ```typescript
-import { ISignal, defineSignal } from 'phosphor-signaling';
+import {
+  ISignal, Signal, clearSignalData, disconnectReceiver, disconnectSender
+} from 'phosphor-signaling';
 
 
+// Complex signal args can be defined with an interface.
+interface IItemAddedArgs {
+  index: number;
+  item: string;
+}
+
+
+// A model class which emits a signal when an item is added.
 class Model {
 
-  // See below for Node/Babel/ES6/ES5 equivalent
-  @defineSignal
-  itemAdded: ISignal<{ index: number, item: string }>;
+  // By convention, signals are declared statically.
+  static itemAddedSignal = new Signal<Model, IItemAddedArgs>();
 
   constructor(name) {
     this._name = name;
+  }
+
+  // Expose the signal via a getter which binds to `this`.
+  get itemAdded(): ISignal<Model, IItemAddedArgs> {
+    return Model.itemAddedSignal.bind(this);
   }
 
   get name(): string {
@@ -119,6 +130,8 @@ class Model {
   addItem(item: string): void {
     var i = this._items.length;
     this._items.push(item);
+
+    // Emit the signal and invoke connected callbacks.
     this.itemAdded.emit({ index: i, item: item });
   }
 
@@ -126,26 +139,15 @@ class Model {
   private _items: string[] = [];
 }
 
-// Node/Babel/ES6/ES5 `@defineSignal` decorator alternative
-defineSignal(Model.prototype, 'itemAdded');
-```
 
-**Next, define the handler(s) which will consume the signals:**
-
-If the same handler is connected to multiple signals, it may want to get a
-reference to the object emitting the signal which caused it to be invoked.
-This can be done with the `emitter()` function.
-
-```typescript
-import { emitter } from 'phosphor-signaling';
-
-
-function logger(args: { index: number, item: name }): void {
+// A free function used as a signal handler.
+function logger(sender: Model, args: IItemAddedArgs): void {
   var model = <Model>emitter();
   console.log(model.name, args.index, args.name);
 }
 
 
+// A class which subcribes to signals on a model.
 class ItemCounter {
 
   constructor(model: Model, item: string) {
@@ -163,7 +165,7 @@ class ItemCounter {
     return this._count;
   }
 
-  private _onItemAdded(args: { index: number, item: name }): void {
+  private _onItemAdded(sender: Model, args: IItemAddedArgs): void {
     if (args.item === this._item) this._count++;
   }
 
@@ -171,11 +173,9 @@ class ItemCounter {
   private _name: string;
   private _count = 0;
 }
-```
 
-**Next, connect the handlers to the signals:**
 
-```typescript
+// Create the models and connect the signal handlers.
 var m1 = new Model('foo');
 var m2 = new Model('bar');
 var m3 = new Model('baz');
@@ -187,44 +187,24 @@ var c3 = new ItemCounter(m1, 'chicken');
 m1.itemAdded.connect(logger);
 m2.itemAdded.connect(logger);
 m3.itemAdded.connect(logger);
-```
 
-**Make some changes to the models:**
 
-```typescript
+// Modify the models which will cause the signals to fire.
 m1.addItem('turkey');
 m1.addItem('fowl');
 m1.addItem('quail');
-
 m2.addItem('buzzard');
-
 m3.addItem('hen');
-```
-
-**Disconnect the logger from all models in a single-shot:**
-
-```typescript
-import { disconnectReceiver } from 'phosphor-signaling';
 
 
+// Disconnect the logger from all models in a single-shot.
 disconnectReceiver(logger);
-```
-
-**Disconnect a particular model from all handlers in a single-shot:**
-
-```typescript
-import { disconnectEmitter } from 'phosphor-signaling';
 
 
-disconnectEmitter(m1);
-```
-
-**Clear all signal data associated with an object:**
-
-```typescript
-import { clearSignalData } from 'phosphor-signaling';
+// Disconnect a particular model from all handlers in a single-shot.
+disconnectSender(m1);
 
 
-// disconnect everything - emitter *and* receiver
+// disconnect everything - sender *and* receiver
 clearSignalData(m1);
 ```
