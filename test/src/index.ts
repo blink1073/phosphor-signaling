@@ -10,21 +10,29 @@
 import expect = require('expect.js');
 
 import {
-  ISignal, clearSignalData, defineSignal, disconnectEmitter,
-  disconnectReceiver, emitter
+  ISignal, Signal, clearSignalData, disconnectReceiver, disconnectSender
 } from '../../lib/index';
 
 
 class TestObject {
 
-  @defineSignal
-  one: ISignal<void>;
+  static oneSignal = new Signal<TestObject, void>();
 
-  @defineSignal
-  two: ISignal<boolean>;
+  static twoSignal = new Signal<TestObject, number>();
 
-  @defineSignal
-  three: ISignal<string[]>;
+  static threeSignal = new Signal<TestObject, string[]>();
+
+  get one(): ISignal<TestObject, void> {
+    return TestObject.oneSignal.bind(this);
+  }
+
+  get two(): ISignal<TestObject, number> {
+    return TestObject.twoSignal.bind(this);
+  }
+
+  get three(): ISignal<TestObject, string[]> {
+    return TestObject.threeSignal.bind(this);
+  }
 }
 
 
@@ -44,17 +52,20 @@ class TestHandler {
 
   oneCount = 0;
 
-  twoValue = false;
+  twoValue = 0;
+
+  twoSender: TestObject = null;
 
   onOne(): void {
     this.oneCount++;
   }
 
-  onTwo(args: boolean): void {
+  onTwo(sender: TestObject, args: number): void {
+    this.twoSender = sender;
     this.twoValue = args;
   }
 
-  onThree(args: string[]): void {
+  onThree(sender: TestObject, args: string[]): void {
     args.push(this.name);
   }
 
@@ -101,13 +112,13 @@ describe('phosphor-signaling', () => {
         var c3 = obj.two.connect(handler.onTwo, handler);
         var c4 = obj.two.connect(handler.onTwo, handler);
         obj.one.emit(void 0);
-        obj.two.emit(true);
+        obj.two.emit(42);
         expect(c1).to.be(true);
         expect(c2).to.be(false);
         expect(c3).to.be(true);
         expect(c4).to.be(false);
         expect(handler.oneCount).to.be(1);
-        expect(handler.twoValue).to.be(true);
+        expect(handler.twoValue).to.be(42);
       });
 
     });
@@ -166,6 +177,19 @@ describe('phosphor-signaling', () => {
     });
 
     describe('#emit()', () => {
+
+      it('should pass the sender and args to the handlers', () => {
+        var obj = new TestObject();
+        var handler1 = new TestHandler();
+        var handler2 = new TestHandler();
+        obj.two.connect(handler1.onTwo, handler1);
+        obj.two.connect(handler2.onTwo, handler2);
+        obj.two.emit(15);
+        expect(handler1.twoSender).to.be(obj);
+        expect(handler2.twoSender).to.be(obj);
+        expect(handler1.twoValue).to.be(15);
+        expect(handler2.twoValue).to.be(15);
+      });
 
       it('should invoke handlers in connection order', () => {
         var obj1 = new TestObject();
@@ -279,60 +303,9 @@ describe('phosphor-signaling', () => {
 
   });
 
-  describe('defineSignal()', () => {
+  describe('disconnectSender()', () => {
 
-    it('should be usable as a TS decorator', () => {
-      var obj1 = new TestObject();
-      var sig = obj1.one;
-      expect(typeof sig.connect).to.be('function');
-      expect(typeof sig.disconnect).to.be('function');
-      expect(typeof sig.emit).to.be('function');
-    });
-
-    it('should be usable as an ES5 function', () => {
-      function Foo() { };
-      defineSignal(Foo.prototype, 'valueChanged');
-      var foo = new (<any>Foo)();
-      var sig = foo.valueChanged;
-      expect(typeof sig.connect).to.be('function');
-      expect(typeof sig.disconnect).to.be('function');
-      expect(typeof sig.emit).to.be('function');
-    });
-
-  });
-
-  describe('emitter()', () => {
-
-    it('should return the current signal emitter', () => {
-      var obj1 = new TestObject();
-      var target: any = null;
-      var handler = () => { target = emitter(); };
-      obj1.one.connect(handler);
-      obj1.one.emit(void 0);
-      expect(target).to.be(obj1);
-    });
-
-    it('should handle nested dispatch', () => {
-      var obj1 = new TestObject();
-      var obj2 = new TestObject();
-      var targets: any[] = [];
-      var func1 = () => { targets.push(emitter()); };
-      var func2 = () =>  {
-        targets.push(emitter());
-        obj1.one.emit(void 0);
-        targets.push(emitter());
-      };
-      obj1.one.connect(func1);
-      obj2.one.connect(func2);
-      obj2.one.emit(void 0);
-      expect(targets).to.eql([obj1, obj2, obj1]);
-    });
-
-  });
-
-  describe('disconnectEmitter()', () => {
-
-    it('should disconnect all signals from a specific emitter', () => {
+    it('should disconnect all signals from a specific sender', () => {
       var obj1 = new TestObject();
       var obj2 = new TestObject();
       var handler1 = new TestHandler();
@@ -341,15 +314,15 @@ describe('phosphor-signaling', () => {
       obj1.one.connect(handler2.onOne, handler2);
       obj2.one.connect(handler1.onOne, handler1);
       obj2.one.connect(handler2.onOne, handler2);
-      disconnectEmitter(obj1);
+      disconnectSender(obj1);
       obj1.one.emit(void 0);
       obj2.one.emit(void 0);
       expect(handler1.oneCount).to.be(1);
       expect(handler2.oneCount).to.be(1);
     });
 
-    it('should be a no-op if the emitter is not connected', () => {
-      expect(() => disconnectEmitter({})).to.not.throwError();
+    it('should be a no-op if the sender is not connected', () => {
+      expect(() => disconnectSender({})).to.not.throwError();
     });
 
   });
@@ -370,11 +343,11 @@ describe('phosphor-signaling', () => {
       disconnectReceiver(handler1);
       obj1.one.emit(void 0);
       obj2.one.emit(void 0);
-      obj2.two.emit(true);
+      obj2.two.emit(42);
       expect(handler1.oneCount).to.be(0);
       expect(handler2.oneCount).to.be(2);
-      expect(handler1.twoValue).to.be(false);
-      expect(handler2.twoValue).to.be(true);
+      expect(handler1.twoValue).to.be(0);
+      expect(handler2.twoValue).to.be(42);
     });
 
     it('should be a no-op if the receiver is not connected', () => {

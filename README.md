@@ -88,143 +88,179 @@ browserify myapp.js -t browserify-css -o mybundle.js
 Usage Examples
 --------------
 
-**Note:** Except where explicitly noted in the examples, this module is fully
-compatible with Node/Babel/ES6/ES5. Simply omit the type declarations when
-using a language other than TypeScript.
+**Note:** This module is fully compatible with Node/Babel/ES6/ES5. Simply
+omit the type declarations when using a language other than TypeScript.
 
-**Start by defining the model object and its signals:**
+**Recommended Design Patterns:**
+
+Class authors should strive to maintain consistency in how their classes
+expose signals to consumers. The PhosphorJS project has adopted a set of
+conventions which cover signal naming and exposure. It is recommended for
+third party libraries to adopt these same conventions in order to ensure
+API consistency and maximal compatibility with libraries and meta tools
+which rely on these conventions.
+
+When defining a signal for use by instances of the **same** class:
+
+  - Define the signal as a static member of the class.
+
+  - Ensure the class type is used as the signal owner type.
+
+  - Append the suffix `'Signal'` to the static member name.
+
+  - Define a public getter which binds the static signal to
+    the instance. This getter should contain no logic outside
+    of binding the signal.
+
+  - The name of the getter should be the same as the name of
+    the static signal minus the `'Signal'` suffix.
+
+  - Consumers should normally use the getter to access the signal,
+    but meta tools and code generators are free to use the static
+    API directly. This is why the getter must be a pure delegate
+    as described above.
 
 ```typescript
-import { ISignal, defineSignal } from 'phosphor-signaling';
+import { ISignal, Signal } from 'phosphor-signaling';
 
 
-class Model {
+class MyClass {
 
-  // See below for Node/Babel/ES6/ES5 equivalent
-  @defineSignal
-  itemAdded: ISignal<{ index: number, item: string }>;
+  static valueChangedSignal = new Signal<MyClass, number>();
 
-  constructor(name) {
+  constructor(name: string) {
     this._name = name;
+  }
+
+  get valueChanged(): ISignal<MyClass, number> {
+    return MyClass.valueChangedSignal.bind(this);
   }
 
   get name(): string {
     return this._name;
   }
 
-  get items(): string[] {
-    return this._items.slice();
+  get value(): number {
+    return this._value;
   }
 
-  addItem(item: string): void {
-    var i = this._items.length;
-    this._items.push(item);
-    this.itemAdded.emit({ index: i, item: item });
+  set value(value: number) {
+    if (value !== this._value) {
+      this._value = value;
+      this.valueChanged.emit(value);
+    }
   }
 
   private _name: string;
-  private _items: string[] = [];
-}
-
-// Node/Babel/ES6/ES5 `@defineSignal` decorator alternative
-defineSignal(Model.prototype, 'itemAdded');
-```
-
-**Next, define the handler(s) which will consume the signals:**
-
-If the same handler is connected to multiple signals, it may want to get a
-reference to the object emitting the signal which caused it to be invoked.
-This can be done with the `emitter()` function.
-
-```typescript
-import { emitter } from 'phosphor-signaling';
-
-
-function logger(args: { index: number, item: name }): void {
-  var model = <Model>emitter();
-  console.log(model.name, args.index, args.name);
+  private _value = 0;
 }
 
 
-class ItemCounter {
+class MyHandler {
 
-  constructor(model: Model, item: string) {
+  constructor(model: MyClass, name: string) {
     this._model = model;
-    this._item = item;
-    model.itemAdded.connect(this._onItemAdded, this);
+    this._name = name;
+    model.valueChanged.connect(this._onValueChanged, this);
   }
 
   dispose(): void {
-    this._model.itemAdded.disconnect(this._onItemAdded, this);
+    this._model.valueChanged.disconnect(this._onValueChanged, this);
     this._model = null;
   }
 
-  get count(): number {
-    return this._count;
+  private _onValueChanged(sender: MyClass, value: number): void {
+    console.log(this._name, value);
   }
 
-  private _onItemAdded(args: { index: number, item: name }): void {
-    if (args.item === this._item) this._count++;
-  }
-
-  private _model: Model;
   private _name: string;
-  private _count = 0;
+  private _model: MyClass;
+}
+
+
+function logger(sender: MyClass, value: number): void {
+  console.log(sender.name, value);
+}
+
+
+var m1 = new MyClass('foo');
+var m2 = new MyClass('bar');
+
+m1.valueChanged.connect(logger);
+m2.valueChanged.connect(logger);
+
+var h1 = new MyHandler(m1, 'ham');
+var h2 = new MyHandler(m2, 'eggs');
+
+m1.value = 42;  // logs: foo 42, ham 42
+m2.value = 17;  // logs: bar 17, eggs 17
+```
+
+When defining a signal for use by instances of a **different** class:
+
+  - Define the signal as a static member of the class.
+
+  - Ensure the instance type is used as the signal owner type.
+
+  - Append the suffix `'Signal'` to the static member name.
+
+  - Define a static method to get the bound signal for a particular
+    instance of the owner type. This method should contain no logic
+    outside of binding the signal.
+
+  - Name the static method by prepending `'get'` to the capitalized
+    signal name. Omit the `'Signal'` suffix.
+
+  - Consumers should normally use the static method to access the
+    bound signal, but meta tools and code generators are free to
+    use the static API directly. This is why the method must be
+    a pure delegate as described above.
+
+This pattern is referred to as an *attached signal*. The signal is defined
+by one class, but the sender is a foreign instance. This pattern is useful
+when creating container objects which must emit signals for child objects
+in a way which doesn't require polluting the child class with extraneous
+signal definitions.
+
+```typescript
+class MyItem {
+  // ...
+}
+
+
+class MyContainer {
+
+  static valueChangedSignal = new Signal<MyItem, number>();
+
+  static getValueChanged(item: MyItem): ISignal<MyItem, number> {
+    return MyContainer.valueChangedSignal.bind(item);
+  }
+
+  getValue(item: MyItem): number {
+    // ...
+  }
+
+  setValue(item: MyItem, value: number): void {
+    // ...
+    MyContainer.getValueChanged(item).emit(value);
+  }
 }
 ```
 
-**Next, connect the handlers to the signals:**
+**Auxiliary API:**
 
 ```typescript
-var m1 = new Model('foo');
-var m2 = new Model('bar');
-var m3 = new Model('baz');
-
-var c1 = new ItemCounter(m1, 'quail');
-var c2 = new ItemCounter(m1, 'robbin');
-var c3 = new ItemCounter(m1, 'chicken');
-
-m1.itemAdded.connect(logger);
-m2.itemAdded.connect(logger);
-m3.itemAdded.connect(logger);
-```
-
-**Make some changes to the models:**
-
-```typescript
-m1.addItem('turkey');
-m1.addItem('fowl');
-m1.addItem('quail');
-
-m2.addItem('buzzard');
-
-m3.addItem('hen');
-```
-
-**Disconnect the logger from all models in a single-shot:**
-
-```typescript
-import { disconnectReceiver } from 'phosphor-signaling';
+import {
+  clearSignalData, disconnectReceiver, disconnectSender
+} from 'phosphor-signaling';
 
 
-disconnectReceiver(logger);
-```
+// Disconnect a handler from all models in a single-shot.
+disconnectReceiver(handler);
 
-**Disconnect a particular model from all handlers in a single-shot:**
+// Disconnect a particular model from all handlers in a single-shot.
+disconnectSender(model);
 
-```typescript
-import { disconnectEmitter } from 'phosphor-signaling';
-
-
-disconnectEmitter(m1);
-```
-
-**Clear all signal data associated with an object:**
-
-```typescript
-import { clearSignalData } from 'phosphor-signaling';
-
-
-// disconnect everything - emitter *and* receiver
-clearSignalData(m1);
+// disconnect everything - sender *and* receiver
+clearSignalData(model);
 ```
