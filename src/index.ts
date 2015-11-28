@@ -455,18 +455,56 @@ function disconnect<T, U>(sender: T, signal: Signal<T, U>, callback: Slot<T, U>,
  * Emit a signal and invoke the connected callbacks.
  */
 function emit<T, U>(sender: T, signal: Signal<T, U>, args: U): void {
+  // If there is no connection list, there is nothing to do.
   let list = senderMap.get(sender);
   if (!list) {
     return;
   }
+
+  // Prepare to dispatch the callbacks. Increment the reference count
+  // on the list so that the list is cleaned only when the emit stack
+  // is fully unwound.
   list.refs++;
-  try {
-    var dirty = invokeList(list, sender, signal, args);
-  } finally {
-    list.refs--;
+  let dirty = false;
+  let last = list.last;
+  let conn = list.first;
+
+  // Dispatch the callbacks. If a connection has a null callback, it
+  // indicates the list is dirty. Connections which match the signal
+  // are safely dispatched where all exceptions are logged. Dispatch
+  // is stopped at the last connection for the current stack frame.
+  while (conn !== null) {
+    if (!conn.callback) {
+      dirty = true;
+    } else if (conn.signal === signal) {
+      safeInvoke(conn, sender, args);
+    }
+    if (conn === last) {
+      break;
+    }
+    conn = conn.nextReceiver;
   }
+
+  // Decrement the reference count on the list.
+  list.refs--;
+
+  // Clean the list if it's dirty and the emit stack is fully unwound.
   if (dirty && list.refs === 0) {
     cleanList(list);
+  }
+}
+
+
+/**
+ * Safely invoke the callback for the given connection.
+ *
+ * Exceptions thrown by the callback will be caught and logged.
+ */
+function safeInvoke(conn: Connection, sender: any, args: any): void {
+  try {
+    conn.callback.call(conn.thisArg, sender, args);
+  } catch (err) {
+    console.error('Exception in signal handler:', err);
   }
 }
 
@@ -487,31 +525,6 @@ function findConnection<T, U>(list: ConnectionList, signal: Signal<T, U>, callba
     conn = conn.nextReceiver;
   }
   return null;
-}
-
-
-/**
- * Invoke the callbacks for the matching signals in the list.
- *
- * Connections added during dispatch will not be invoked. This returns
- * `true` if there are dead connections in the list, `false` otherwise.
- */
-function invokeList<T, U>(list: ConnectionList, sender: T, signal: Signal<T, U>, args: U): boolean {
-  let dirty = false;
-  let last = list.last;
-  let conn = list.first;
-  while (conn !== null) {
-    if (!conn.callback) {
-      dirty = true;
-    } else if (conn.signal === signal) {
-      conn.callback.call(conn.thisArg, sender, args);
-    }
-    if (conn === last) {
-      break;
-    }
-    conn = conn.nextReceiver;
-  }
-  return dirty;
 }
 
 

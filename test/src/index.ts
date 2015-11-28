@@ -211,7 +211,7 @@ describe('phosphor-signaling', () => {
         expect(handler2.oneCount).to.be(0);
       });
 
-      it('should immediately propagate a handler exception', () => {
+      it('should catch any exceptions in handlers', () => {
         let obj1 = new TestObject();
         let handler1 = new TestHandler();
         let handler2 = new TestHandler();
@@ -229,12 +229,8 @@ describe('phosphor-signaling', () => {
         } catch (e) {
           threw = true;
         }
-        obj1.three.disconnect(handler2.onThrow, handler2);
-        let names2: string[] = [];
-        obj1.three.emit(names2);
-        expect(threw).to.be(true);
-        expect(names1).to.eql(['foo']);
-        expect(names2).to.eql(['foo', 'baz']);
+        expect(threw).to.be(false);
+        expect(names1).to.eql(['foo', 'baz']);
       });
 
       it('should not invoke signals added during emission', () =>  {
