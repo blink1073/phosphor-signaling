@@ -11,6 +11,7 @@
 /**
  * An object used for type-safe inter-object communication.
  *
+ * #### Notes
  * Signals provide a type-safe implementation of the publish-subscribe
  * pattern. An object (publisher) declares which signals it will emit,
  * and consumers connect callbacks (subscribers) to those signals. The
@@ -60,8 +61,8 @@
  *   console.log(sender.name, value);
  * }
  *
- * var m1 = new MyClass('foo');
- * var m2 = new MyClass('bar');
+ * let m1 = new MyClass('foo');
+ * let m2 = new MyClass('bar');
  *
  * m1.valueChanged.connect(logger);
  * m2.valueChanged.connect(logger);
@@ -87,7 +88,7 @@ class Signal<T, U> {
 
 
 /**
- * A typedef for a signal callback function.
+ * A type alias for a signal callback function.
  *
  * @param T - The type of the sender.
  *
@@ -100,6 +101,7 @@ type Slot<T, U> = (sender: T, args: U) => void;
 /**
  * A signal object which is bound to a specific sender.
  *
+ * #### Notes
  * User code will not create instances of `ISignal` directly. They are
  * created on demand by calling the [[bind]] method of a [[Signal]].
  */
@@ -171,9 +173,7 @@ interface ISignal<T, U> {
    * @param args - The args object to pass to the callbacks.
    *
    * #### Notes
-   * If a connected callback throws an exception, dispatching of the
-   * signal will stop immediately and the exception will be propagated
-   * to the call site of this function.
+   * Exceptions thrown by connected callbacks will be logged.
    *
    * #### Example
    * ```typescript
@@ -196,11 +196,11 @@ interface ISignal<T, U> {
  */
 export
 function disconnectSender(sender: any): void {
-  var list = senderMap.get(sender);
+  let list = senderMap.get(sender);
   if (!list) {
     return;
   }
-  var conn = list.first;
+  let conn = list.first;
   while (conn !== null) {
     removeFromSendersList(conn);
     conn.callback = null;
@@ -232,12 +232,12 @@ function disconnectSender(sender: any): void {
  */
 export
 function disconnectReceiver(receiver: any): void {
-  var conn = receiverMap.get(receiver);
+  let conn = receiverMap.get(receiver);
   if (!conn) {
     return;
   }
   while (conn !== null) {
-    var next = conn.nextSender;
+    let next = conn.nextSender;
     conn.callback = null;
     conn.thisArg = null;
     conn.prevSender = null;
@@ -384,13 +384,13 @@ function connect<T, U>(sender: T, signal: Signal<T, U>, callback: Slot<T, U>, th
   thisArg = thisArg || void 0;
 
   // Search for an equivalent connection and bail if one exists.
-  var list = senderMap.get(sender);
+  let list = senderMap.get(sender);
   if (list && findConnection(list, signal, callback, thisArg)) {
     return false;
   }
 
   // Create a new connection.
-  var conn = new Connection();
+  let conn = new Connection();
   conn.signal = signal;
   conn.callback = callback;
   conn.thisArg = thisArg;
@@ -410,8 +410,8 @@ function connect<T, U>(sender: T, signal: Signal<T, U>, callback: Slot<T, U>, th
   }
 
   // Add the connection to the senders list.
-  var receiver = thisArg || callback;
-  var head = receiverMap.get(receiver);
+  let receiver = thisArg || callback;
+  let head = receiverMap.get(receiver);
   if (head) {
     head.prevSender = conn;
     conn.nextSender = head;
@@ -430,11 +430,11 @@ function disconnect<T, U>(sender: T, signal: Signal<T, U>, callback: Slot<T, U>,
   thisArg = thisArg || void 0;
 
   // Search for an equivalent connection and bail if none exists.
-  var list = senderMap.get(sender);
+  let list = senderMap.get(sender);
   if (!list) {
     return false;
   }
-  var conn = findConnection(list, signal, callback, thisArg);
+  let conn = findConnection(list, signal, callback, thisArg);
   if (!conn) {
     return false;
   }
@@ -455,7 +455,7 @@ function disconnect<T, U>(sender: T, signal: Signal<T, U>, callback: Slot<T, U>,
  * Emit a signal and invoke the connected callbacks.
  */
 function emit<T, U>(sender: T, signal: Signal<T, U>, args: U): void {
-  var list = senderMap.get(sender);
+  let list = senderMap.get(sender);
   if (!list) {
     return;
   }
@@ -477,7 +477,7 @@ function emit<T, U>(sender: T, signal: Signal<T, U>, args: U): void {
  * Returns `null` if no matching connection is found.
  */
 function findConnection<T, U>(list: ConnectionList, signal: Signal<T, U>, callback: Slot<T, U>, thisArg: any): Connection {
-  var conn = list.first;
+  let conn = list.first;
   while (conn !== null) {
     if (conn.signal === signal &&
         conn.callback === callback &&
@@ -497,9 +497,9 @@ function findConnection<T, U>(list: ConnectionList, signal: Signal<T, U>, callba
  * `true` if there are dead connections in the list, `false` otherwise.
  */
 function invokeList<T, U>(list: ConnectionList, sender: T, signal: Signal<T, U>, args: U): boolean {
-  var dirty = false;
-  var last = list.last;
-  var conn = list.first;
+  let dirty = false;
+  let last = list.last;
+  let conn = list.first;
   while (conn !== null) {
     if (!conn.callback) {
       dirty = true;
@@ -519,10 +519,10 @@ function invokeList<T, U>(list: ConnectionList, sender: T, signal: Signal<T, U>,
  * Remove the dead connections from the given connection list.
  */
 function cleanList(list: ConnectionList): void {
-  var prev: Connection;
-  var conn = list.first;
+  let prev: Connection;
+  let conn = list.first;
   while (conn !== null) {
-    var next = conn.nextReceiver;
+    let next = conn.nextReceiver;
     if (!conn.callback) {
       conn.nextReceiver = null;
     } else if (!prev) {
@@ -548,12 +548,12 @@ function cleanList(list: ConnectionList): void {
  * Remove a connection from the doubly linked list of senders.
  */
 function removeFromSendersList(conn: Connection): void {
-  var receiver = conn.thisArg || conn.callback;
+  let receiver = conn.thisArg || conn.callback;
   if (!receiver) {
     return;
   }
-  var prev = conn.prevSender;
-  var next = conn.nextSender;
+  let prev = conn.prevSender;
+  let next = conn.nextSender;
   if (prev === null && next === null) {
     receiverMap.delete(receiver);
   } else if (prev === null) {

@@ -82,35 +82,35 @@ describe('phosphor-signaling', () => {
     describe('#connect()', () => {
 
       it('should return true on success', () => {
-        var obj = new TestObject();
-        var handler = new TestHandler();
-        var c1 = obj.one.connect(handler.onOne, handler);
+        let obj = new TestObject();
+        let handler = new TestHandler();
+        let c1 = obj.one.connect(handler.onOne, handler);
         expect(c1).to.be(true);
       });
 
       it('should return false on failure', () => {
-        var obj = new TestObject();
-        var handler = new TestHandler();
-        var c1 = obj.one.connect(handler.onOne, handler);
-        var c2 = obj.one.connect(handler.onOne, handler);
+        let obj = new TestObject();
+        let handler = new TestHandler();
+        let c1 = obj.one.connect(handler.onOne, handler);
+        let c2 = obj.one.connect(handler.onOne, handler);
         expect(c1).to.be(true);
         expect(c2).to.be(false);
       });
 
       it('should connect plain functions', () => {
-        var obj = new TestObject();
-        var handler = new TestHandler();
-        var c1 = obj.one.connect(handler.onThrow);
+        let obj = new TestObject();
+        let handler = new TestHandler();
+        let c1 = obj.one.connect(handler.onThrow);
         expect(c1).to.be(true);
       });
 
       it('should ignore duplicate connections', () => {
-        var obj = new TestObject();
-        var handler = new TestHandler();
-        var c1 = obj.one.connect(handler.onOne, handler);
-        var c2 = obj.one.connect(handler.onOne, handler);
-        var c3 = obj.two.connect(handler.onTwo, handler);
-        var c4 = obj.two.connect(handler.onTwo, handler);
+        let obj = new TestObject();
+        let handler = new TestHandler();
+        let c1 = obj.one.connect(handler.onOne, handler);
+        let c2 = obj.one.connect(handler.onOne, handler);
+        let c3 = obj.two.connect(handler.onTwo, handler);
+        let c4 = obj.two.connect(handler.onTwo, handler);
         obj.one.emit(void 0);
         obj.two.emit(42);
         expect(c1).to.be(true);
@@ -126,43 +126,43 @@ describe('phosphor-signaling', () => {
     describe('#disconnect()', () => {
 
       it('should return true on success', () => {
-        var obj = new TestObject();
-        var handler = new TestHandler();
+        let obj = new TestObject();
+        let handler = new TestHandler();
         obj.one.connect(handler.onOne, handler);
-        var d1 = obj.one.disconnect(handler.onOne, handler);
+        let d1 = obj.one.disconnect(handler.onOne, handler);
         expect(d1).to.be(true);
       });
 
       it('should return false on failure', () => {
-        var obj = new TestObject();
-        var handler = new TestHandler();
-        var d1 = obj.one.disconnect(handler.onOne, handler);
+        let obj = new TestObject();
+        let handler = new TestHandler();
+        let d1 = obj.one.disconnect(handler.onOne, handler);
         expect(d1).to.be(false);
       });
 
       it('should disconnect plain functions', () => {
-        var obj = new TestObject();
-        var handler = new TestHandler();
+        let obj = new TestObject();
+        let handler = new TestHandler();
         obj.one.connect(handler.onThrow);
         expect(obj.one.disconnect(handler.onThrow)).to.be(true);
         expect(() => obj.one.emit(void 0)).to.not.throwError();
       });
 
       it('should disconnect a specific signal', () => {
-        var obj1 = new TestObject();
-        var obj2 = new TestObject();
-        var obj3 = new TestObject();
-        var handler1 = new TestHandler();
-        var handler2 = new TestHandler();
-        var handler3 = new TestHandler();
+        let obj1 = new TestObject();
+        let obj2 = new TestObject();
+        let obj3 = new TestObject();
+        let handler1 = new TestHandler();
+        let handler2 = new TestHandler();
+        let handler3 = new TestHandler();
         obj1.one.connect(handler1.onOne, handler1);
         obj2.one.connect(handler2.onOne, handler2);
         obj1.one.connect(handler3.onOne, handler3);
         obj2.one.connect(handler3.onOne, handler3);
         obj3.one.connect(handler3.onOne, handler3);
-        var d1 = obj1.one.disconnect(handler1.onOne, handler1);
-        var d2 = obj1.one.disconnect(handler1.onOne, handler1);
-        var d3 = obj2.one.disconnect(handler3.onOne, handler3);
+        let d1 = obj1.one.disconnect(handler1.onOne, handler1);
+        let d2 = obj1.one.disconnect(handler1.onOne, handler1);
+        let d3 = obj2.one.disconnect(handler3.onOne, handler3);
         obj1.one.emit(void 0);
         obj2.one.emit(void 0);
         obj3.one.emit(void 0);
@@ -179,9 +179,9 @@ describe('phosphor-signaling', () => {
     describe('#emit()', () => {
 
       it('should pass the sender and args to the handlers', () => {
-        var obj = new TestObject();
-        var handler1 = new TestHandler();
-        var handler2 = new TestHandler();
+        let obj = new TestObject();
+        let handler1 = new TestHandler();
+        let handler2 = new TestHandler();
         obj.two.connect(handler1.onTwo, handler1);
         obj.two.connect(handler2.onTwo, handler2);
         obj.two.emit(15);
@@ -192,10 +192,10 @@ describe('phosphor-signaling', () => {
       });
 
       it('should invoke handlers in connection order', () => {
-        var obj1 = new TestObject();
-        var handler1 = new TestHandler();
-        var handler2 = new TestHandler();
-        var handler3 = new TestHandler();
+        let obj1 = new TestObject();
+        let handler1 = new TestHandler();
+        let handler2 = new TestHandler();
+        let handler3 = new TestHandler();
         handler1.name = 'foo';
         handler2.name = 'bar';
         handler3.name = 'baz';
@@ -203,7 +203,7 @@ describe('phosphor-signaling', () => {
         obj1.one.connect(handler1.onOne, handler1);
         obj1.three.connect(handler2.onThree, handler2);
         obj1.three.connect(handler3.onThree, handler3);
-        var names: string[] = [];
+        let names: string[] = [];
         obj1.three.emit(names);
         obj1.one.emit(void 0);
         expect(names).to.eql(['foo', 'bar', 'baz']);
@@ -212,25 +212,25 @@ describe('phosphor-signaling', () => {
       });
 
       it('should immediately propagate a handler exception', () => {
-        var obj1 = new TestObject();
-        var handler1 = new TestHandler();
-        var handler2 = new TestHandler();
-        var handler3 = new TestHandler();
+        let obj1 = new TestObject();
+        let handler1 = new TestHandler();
+        let handler2 = new TestHandler();
+        let handler3 = new TestHandler();
         handler1.name = 'foo';
         handler2.name = 'bar';
         handler3.name = 'baz';
         obj1.three.connect(handler1.onThree, handler1);
         obj1.three.connect(handler2.onThrow, handler2);
         obj1.three.connect(handler3.onThree, handler3);
-        var threw = false;
-        var names1: string[] = [];
+        let threw = false;
+        let names1: string[] = [];
         try {
           obj1.three.emit(names1);
         } catch (e) {
           threw = true;
         }
         obj1.three.disconnect(handler2.onThrow, handler2);
-        var names2: string[] = [];
+        let names2: string[] = [];
         obj1.three.emit(names2);
         expect(threw).to.be(true);
         expect(names1).to.eql(['foo']);
@@ -238,14 +238,14 @@ describe('phosphor-signaling', () => {
       });
 
       it('should not invoke signals added during emission', () =>  {
-        var obj1 = new TestObject();
-        var handler1 = new TestHandler();
-        var handler2 = new TestHandler();
-        var handler3 = new TestHandler();
+        let obj1 = new TestObject();
+        let handler1 = new TestHandler();
+        let handler2 = new TestHandler();
+        let handler3 = new TestHandler();
         handler1.name = 'foo';
         handler2.name = 'bar';
         handler3.name = 'baz';
-        var adder = {
+        let adder = {
           add: () => {
             obj1.three.connect(handler3.onThree, handler3);
           },
@@ -253,24 +253,24 @@ describe('phosphor-signaling', () => {
         obj1.three.connect(handler1.onThree, handler1);
         obj1.three.connect(handler2.onThree, handler2);
         obj1.three.connect(adder.add, adder);
-        var names1: string[] = [];
+        let names1: string[] = [];
         obj1.three.emit(names1);
         obj1.three.disconnect(adder.add, adder);
-        var names2: string[] = [];
+        let names2: string[] = [];
         obj1.three.emit(names2);
         expect(names1).to.eql(['foo', 'bar']);
         expect(names2).to.eql(['foo', 'bar', 'baz']);
       });
 
       it('should not invoke signals removed during emission', () => {
-        var obj1 = new TestObject();
-        var handler1 = new TestHandler();
-        var handler2 = new TestHandler();
-        var handler3 = new TestHandler();
+        let obj1 = new TestObject();
+        let handler1 = new TestHandler();
+        let handler2 = new TestHandler();
+        let handler3 = new TestHandler();
         handler1.name = 'foo';
         handler2.name = 'bar';
         handler3.name = 'baz';
-        var remover = {
+        let remover = {
           remove: () => {
             obj1.three.disconnect(handler3.onThree, handler3);
           },
@@ -279,7 +279,7 @@ describe('phosphor-signaling', () => {
         obj1.three.connect(handler2.onThree, handler2);
         obj1.three.connect(remover.remove, remover);
         obj1.three.connect(handler3.onThree, handler3);
-        var names: string[] = [];
+        let names: string[] = [];
         obj1.three.emit(names);
         expect(names).to.eql(['foo', 'bar']);
       });
@@ -291,10 +291,10 @@ describe('phosphor-signaling', () => {
   describe('disconnectSender()', () => {
 
     it('should disconnect all signals from a specific sender', () => {
-      var obj1 = new TestObject();
-      var obj2 = new TestObject();
-      var handler1 = new TestHandler();
-      var handler2 = new TestHandler();
+      let obj1 = new TestObject();
+      let obj2 = new TestObject();
+      let handler1 = new TestHandler();
+      let handler2 = new TestHandler();
       obj1.one.connect(handler1.onOne, handler1);
       obj1.one.connect(handler2.onOne, handler2);
       obj2.one.connect(handler1.onOne, handler1);
@@ -315,10 +315,10 @@ describe('phosphor-signaling', () => {
   describe('disconnectReceiver()', () => {
 
     it('should disconnect all signals from a specific receiver', () => {
-      var obj1 = new TestObject();
-      var obj2 = new TestObject();
-      var handler1 = new TestHandler();
-      var handler2 = new TestHandler();
+      let obj1 = new TestObject();
+      let obj2 = new TestObject();
+      let handler1 = new TestHandler();
+      let handler2 = new TestHandler();
       obj1.one.connect(handler1.onOne, handler1);
       obj1.one.connect(handler2.onOne, handler2);
       obj2.one.connect(handler1.onOne, handler1);
@@ -344,10 +344,10 @@ describe('phosphor-signaling', () => {
   describe('clearSignalData()', () => {
 
     it('should clear all signal data associated with an object', () => {
-      var counter = 0;
-      var onCount = () => { counter++ };
-      var ext1 = new ExtendedObject();
-      var ext2 = new ExtendedObject();
+      let counter = 0;
+      let onCount = () => { counter++ };
+      let ext1 = new ExtendedObject();
+      let ext2 = new ExtendedObject();
       ext1.one.connect(ext1.onNotify, ext1);
       ext1.one.connect(ext2.onNotify, ext2);
       ext1.one.connect(onCount);
@@ -367,13 +367,13 @@ describe('phosphor-signaling', () => {
   context('https://github.com/phosphorjs/phosphor-signaling/issues/5', () => {
 
     it('should handle connect after disconnect and emit', () => {
-      var obj = new TestObject();
-      var handler = new TestHandler();
-      var c1 = obj.one.connect(handler.onOne, handler);
+      let obj = new TestObject();
+      let handler = new TestHandler();
+      let c1 = obj.one.connect(handler.onOne, handler);
       expect(c1).to.be(true);
       obj.one.disconnect(handler.onOne, handler);
       obj.one.emit(void 0);
-      var c2 = obj.one.connect(handler.onOne, handler);
+      let c2 = obj.one.connect(handler.onOne, handler);
       expect(c2).to.be(true);
     });
 
@@ -382,8 +382,8 @@ describe('phosphor-signaling', () => {
   context('https://github.com/phosphorjs/phosphor-signaling/issues/8', () => {
 
     it('should handle disconnecting sender after receiver', () => {
-      var obj = new TestObject();
-      var handler = new TestHandler();
+      let obj = new TestObject();
+      let handler = new TestHandler();
       obj.one.connect(handler.onOne, handler);
       disconnectReceiver(handler);
       disconnectSender(obj);
@@ -392,8 +392,8 @@ describe('phosphor-signaling', () => {
     });
 
     it('should handle disconnecting receiver after sender', () => {
-      var obj = new TestObject();
-      var handler = new TestHandler();
+      let obj = new TestObject();
+      let handler = new TestHandler();
       obj.one.connect(handler.onOne, handler);
       disconnectSender(obj);
       disconnectReceiver(handler);
