@@ -6,14 +6,11 @@ env:
   matrix:
     - GROUP=
   global:
+    - GHREPO=github.com/phosphorjs/phosphor-signaling
     - secure: SOg3gdVIuLFcz9gyO1HP6TL0JLUqvplQSOGstKD41WLZ7p86GbcnRfKqPHfwO/poamV4C9pjH/Wv33Q7GDVHTFYvt8u4dlTdQhpI1svPUI+Y0KuhxbizdDVPthM5bgOQwV27JB0zwcl5lhGGO3MyGpTb6BQlb5iF4dmahYRxUQh/qWCXHelAWQjBLpsDZV/SdpV/sToSja89WDEsMuBKoufG8hSp1pBPYna9QOShmrYLWDRSLSWtiU1vynA0+1fb2ttzVlhze1AqZY+V/TrL623ftrodsDti+18bE7HbRw30t+gN963QgxaEq/sxj4RXyfOL+V+QbIIvzhu6Uuhb8yhQ7lnuEJtEgvUwrGqi0hT5In6zeAdjCHDXtk+Rnnn1UfP+i845Dq36RgZQTKE6tnBOPbjYXd7jXn3fNYX8aHUlMOK3Qy47h6jIwJg64ZGZCvzljK4cT2FZs+lW3gX8mOjbEoHXthC56tRKMLTvjOi1stn5ughDoiVzLttOCxkHS+E4E0TPQnLqDwCO6y8bS5HP6F3nr8Lw7Uj0sn45DO45Dw1KkhQb+2SRQZa6AJd+0tbyfT9M5xDxGIxWUbu0R1xIfMjq4Jy0TJg63LScY6HM7l8CfK9eFmNIj4w0uWDXrYOyEtpXimHcMzjsqygpo5Z1N3KYC2+TXmiGV+lXMfQ=
-before_install:
-  - chmod +x ./scripts/travis_install.sh
-  - chmod +x ./scripts/travis_script.sh
-  - chmod +x ./scripts/travis_after_success.sh
 install:
-  - ./scripts/travis_install.sh
+  - bash ./scripts/travis_install.sh
 script:
-  - ./scripts/travis_script.sh
+  - bash ./scripts/travis_script.sh
 after_success:
-  - ./scripts/travis_after_success.sh
+  - bash ./scripts/travis_after_success.sh
