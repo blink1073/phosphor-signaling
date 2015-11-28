@@ -286,21 +286,6 @@ describe('phosphor-signaling', () => {
 
     });
 
-    context('https://github.com/phosphorjs/phosphor-signaling/issues/5', () => {
-
-      it('should handle connect after disconnect and emit', () => {
-        var obj = new TestObject();
-        var handler = new TestHandler();
-        var c1 = obj.one.connect(handler.onOne, handler);
-        expect(c1).to.be(true);
-        obj.one.disconnect(handler.onOne, handler);
-        obj.one.emit(void 0);
-        var c2 = obj.one.connect(handler.onOne, handler);
-        expect(c2).to.be(true);
-      });
-
-    });
-
   });
 
   describe('disconnectSender()', () => {
@@ -375,6 +360,45 @@ describe('phosphor-signaling', () => {
       expect(ext1.notifyCount).to.be(0);
       expect(ext2.notifyCount).to.be(1);
       expect(counter).to.be(1);
+    });
+
+  });
+
+  context('https://github.com/phosphorjs/phosphor-signaling/issues/5', () => {
+
+    it('should handle connect after disconnect and emit', () => {
+      var obj = new TestObject();
+      var handler = new TestHandler();
+      var c1 = obj.one.connect(handler.onOne, handler);
+      expect(c1).to.be(true);
+      obj.one.disconnect(handler.onOne, handler);
+      obj.one.emit(void 0);
+      var c2 = obj.one.connect(handler.onOne, handler);
+      expect(c2).to.be(true);
+    });
+
+  });
+
+  context('https://github.com/phosphorjs/phosphor-signaling/issues/8', () => {
+
+    it('should handle disconnecting sender after receiver', () => {
+      var obj = new TestObject();
+      var handler = new TestHandler();
+      obj.one.connect(handler.onOne, handler);
+      disconnectReceiver(handler);
+      disconnectSender(obj);
+      obj.one.emit(void 0);
+      expect(handler.oneCount).to.be(0);
+    });
+
+    it('should handle disconnecting receiver after sender', () => {
+      var obj = new TestObject();
+      var handler = new TestHandler();
+      obj.one.connect(handler.onOne, handler);
+      disconnectSender(obj);
+      disconnectReceiver(handler);
+      obj.one.emit(void 0);
+      expect(handler.oneCount).to.be(0);
     });
 
   });

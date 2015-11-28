@@ -549,6 +549,9 @@ function cleanList(list: ConnectionList): void {
  */
 function removeFromSendersList(conn: Connection): void {
   var receiver = conn.thisArg || conn.callback;
+  if (!receiver) {
+    return;
+  }
   var prev = conn.prevSender;
   var next = conn.nextSender;
   if (prev === null && next === null) {
